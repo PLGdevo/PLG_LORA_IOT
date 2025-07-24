@@ -1,4 +1,3 @@
-#define DEBUG // Define DEBUG to enable debug printing
 
 #if defined(DEBUG)
 #define DEBUG_PRINT(...) Serial.print(__VA_ARGS__)     // Định nghĩa hàm in ra thông tin debug

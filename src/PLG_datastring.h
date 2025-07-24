@@ -44,14 +44,14 @@ void PLG_read_4()
     address_slave = receivedData.substring(index1 + 1, index2);
     namedata = receivedData.substring(index2 + 1, index3);
     data = receivedData.substring(index3 + 1);
-    DEBUG_PRINT("Address: ");
-    DEBUG_PRINTLN(address);
-    DEBUG_PRINT("Address Slave: ");
-    DEBUG_PRINTLN(address_slave);
-    DEBUG_PRINT("Name Data: ");
-    DEBUG_PRINTLN(namedata);
-    DEBUG_PRINT("Data: ");
-    DEBUG_PRINTLN(data);
+    // DEBUG_PRINT("Address: ");
+    // DEBUG_PRINTLN(address);
+    // DEBUG_PRINT("Address Slave: ");
+    // DEBUG_PRINTLN(address_slave);
+    // DEBUG_PRINT("Name Data: ");
+    // DEBUG_PRINTLN(namedata);
+    // DEBUG_PRINT("Data: ");
+    // DEBUG_PRINTLN(data);
 }
 void PLG_read_5()
 {
@@ -70,16 +70,16 @@ void PLG_read_5()
     address_remus = receivedData.substring(i2 + 1, i3);
     namedata = receivedData.substring(i3 + 1, i4);
     data = receivedData.substring(i4 + 1);
-    DEBUG_PRINT("Address: ");
-    DEBUG_PRINTLN(address);
-    DEBUG_PRINT("Address Slave: ");
-    DEBUG_PRINTLN(address_slave);
-    DEBUG_PRINT("Address Remus: ");
-    DEBUG_PRINTLN(address_remus);
-    DEBUG_PRINT("Name Data: ");
-    DEBUG_PRINTLN(namedata);
-    DEBUG_PRINT("Data: ");
-    DEBUG_PRINTLN(data);
+    // DEBUG_PRINT("Address: ");
+    // DEBUG_PRINTLN(address);
+    // DEBUG_PRINT("Address Slave: ");
+    // DEBUG_PRINTLN(address_slave);
+    // DEBUG_PRINT("Address Remus: ");
+    // DEBUG_PRINTLN(address_remus);
+    // DEBUG_PRINT("Name Data: ");
+    // DEBUG_PRINTLN(namedata);
+    // DEBUG_PRINT("Data: ");
+    // DEBUG_PRINTLN(data);
 }
 // Hàm đếm số dấu '|' trong chuỗi
 int PLG_count_separator(String str)

@@ -127,4 +127,14 @@ void PLG_slave_loop()
         PLG_check_message(); // Check the received data
         thucthilenh();       // Execute the command
     }
+    PLG_write_4("slave1", "master", "hum", "50.7");
+    LoRa.beginPacket(); // Start a new packet
+    LoRa.print(messages4);
+    LoRa.endPacket();              // Finish the packet and send it
+    digitalWrite(led_master, HIGH); // Turn off LED for slave status
+    delay(20);                     // Delay to ensure the message is sent
+    digitalWrite(led_master, LOW);  // Turn off LED for slave status
+    delay(1000); // Delay to avoid flooding the LoRa network
+    
+
 }
