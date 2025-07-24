@@ -40,8 +40,8 @@ void loop()
   PLG_master_loop(); // Call loop function for master device
 
 #else
-  // PLG_slave_loop(); // Call loop function for slave device
-  PLG_slave_rs485_loop(); // Call loop function for RS485 slave
+   PLG_slave_loop(); // Call loop function for slave device
+ 
 #endif
 
   // You can adjust the delay as needed for your application

@@ -12,13 +12,16 @@ String data = "";
 String receivedData = "";
 String messages4 = address + "|" + address_slave + "|" + namedata + "|" + data;
 String messages5 = address + "|" + address_slave + "|" + address_remus + "|" + namedata + "|" + data;
-
+/*                  dia chi gui | dia chi nhan | ten du lieu | du lieu
+                    dc su dung cho 2 module                                 */
 void PLG_write_4(String address, String address_slave, String namedata, String data)
 {
     messages4 = address + "|" + address_slave + "|" + namedata + "|" + data;
     DEBUG_PRINT("Sending packet: ");
     DEBUG_PRINTLN(messages4);
 }
+/*         dia chi gui | dia chi trung gian |dia chi cuoi | ten du lieu | du lieu    
+                        su dung cho 3 module                                */
 void PLG_write_5(String address, String address_slave, String address_remus, String namedata, String data)
 {
     messages5 = address + "|" + address_slave + "|" + address_remus + "|" + namedata + "|" + data;

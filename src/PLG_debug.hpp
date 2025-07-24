@@ -1,6 +1,5 @@
 #define DEBUG // Define DEBUG to enable debug printing
-#define DEFAULT_MQTT_HOST "mqtt1.eoh.io"
-#define ERA_AUTH_TOKEN "e09f2f31-63cc-490a-b2b8-0b3f40511f90"
+
 #if defined(DEBUG)
 #define DEBUG_PRINT(...) Serial.print(__VA_ARGS__)     // Định nghĩa hàm in ra thông tin debug
 #define DEBUG_PRINTLN(...) Serial.println(__VA_ARGS__) // Định nghĩa hàm in ra thông tin debug kèm xuống dòng

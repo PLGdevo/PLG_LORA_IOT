@@ -1,6 +1,7 @@
 
 
-
+#define DEFAULT_MQTT_HOST "mqtt1.eoh.io"
+#define ERA_AUTH_TOKEN "e09f2f31-63cc-490a-b2b8-0b3f40511f90"
 // /* Define setting button */
 #define BUTTON_PIN 0
 
