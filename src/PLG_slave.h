@@ -47,73 +47,65 @@ void Setup_slave()
     // Initialize RS485 Modbus Master
     Serial2.begin(115200, SERIAL_8N1, RX, TX); // Initialize Serial2 for RS485 communication
 }
-void PLG_execmd()
+
+void thucthilenh()
 {
-    int idx1 = receivedData.indexOf('|');
-    int idx2 = receivedData.indexOf('|', idx1 + 1);
-
-    String slave = receivedData.substring(0, idx1);
-    String name = receivedData.substring(idx1 + 1, idx2);
-    String status = receivedData.substring(idx2 + 1);
-
-    // DEBUG_PRINTLN("Slave: " + slave);
-    // DEBUG_PRINTLN("Name: " + name);
-    // DEBUG_PRINTLN("Status: " + status);
-    digitalWrite(led_master, HIGH); // Turn on LED for slave status
-    delay(15);                      // Delay to ensure the message is sent
-    digitalWrite(led_master, LOW);  // Turn off LED for slave status
-    if (slave.startsWith("slave1"))
+    if (address_slave.startsWith("slave1") && namedata.startsWith("bom"))
     {
-        if (name.startsWith("bom"))
+
+        if (data.startsWith("ok"))
         {
-            if (status == "ok")
-            {
-                DEBUG_PRINTLN("bom_run");
-            }
-            else if (status == "not ok")
-            {
-                DEBUG_PRINTLN("bom_not_run");
-            }
+
+            DEBUG_PRINTLN("bom ON");
         }
-        else if (name.startsWith("catnang"))
+        else if (data.startsWith("not ok"))
         {
-            if (status == "ok")
-            {
-                DEBUG_PRINTLN("catnang_run");
-            }
-            else if (status == "not ok")
-            {
-                DEBUG_PRINTLN("catnang_not_run");
-            }
+
+            DEBUG_PRINTLN("bom OFF");
         }
-        else if (name.startsWith("fanhut"))
+    }
+    else if (address_slave.startsWith("slave1") && namedata.startsWith("quat"))
+    {
+        if (data.startsWith("ok"))
         {
-            if (status == "ok")
-            {
-                DEBUG_PRINTLN("fanhut_run");
-            }
-            else if (status == "not ok")
-            {
-                DEBUG_PRINTLN("fanhut_not_run");
-            }
+
+            DEBUG_PRINTLN("quat ON");
         }
-        else if (name.startsWith("dinhduong1"))
+        else if (data.startsWith("not ok"))
         {
-            if (status < "12")
-            {
-                DEBUG_PRINTLN("the tich bom: " + status);
-                digitalWrite(led_connected, HIGH); // Turn on LED for connection status
-            }
-            else if (status >= "12")
-            {
-                DEBUG_PRINTLN("the tich bom: " + status);
-                digitalWrite(led_connected, LOW); // Turn off LED for connection status
-            }
+
+            DEBUG_PRINTLN("quat OFF");
+        }
+    }
+    else if (address_slave.startsWith("slave1") && namedata.startsWith("fanhut"))
+    {
+        if (data.startsWith("ok"))
+        {
+
+            DEBUG_PRINTLN("quat hut ON");
+        }
+        else if (data.startsWith("not ok"))
+        {
+
+            DEBUG_PRINTLN("quat hut OFF");
+        }
+    }
+    else if (address_slave.startsWith("slave1") && namedata.startsWith("catnag"))
+    {
+        if (data.startsWith("ok"))
+        {
+
+            DEBUG_PRINTLN("cat nang ON");
+        }
+        else if (data.startsWith("not ok"))
+        {
+
+            DEBUG_PRINTLN("cat nang OFF");
         }
     }
     else
     {
-        DEBUG_PRINTLN("Unknown slave");
+        DEBUG_PRINTLN("Khong co lenh nao duoc thuc hien");
     }
 }
 void PLG_slave_loop()
@@ -132,44 +124,7 @@ void PLG_slave_loop()
         {
             receivedData += (char)LoRa.read();
         }
-        PLG_execmd();
+        PLG_check_message(); // Check the received data
+        thucthilenh();       // Execute the command
     }
-}
-void thucthilenh()
-{
-    if (address_slave.startsWith("slave1"))
-    {
-        if (namedata.startsWith("bom"))
-        {
-            if (data.startsWith("ok"))
-            {
-                digitalWrite(led_slave, HIGH); // Turn on LED for slave status
-            }
-            else if (data.startsWith("not ok"))
-            {
-                digitalWrite(led_slave, LOW); // Turn off LED for slave status
-            }
-        }
-    }
-}
-void PLG_slave_rs485_loop()
-{
-    // PLG_write_4("master", "slave1", "bom", "ok");
-    // Serial2.println(messages4);
-    // delay(1000); // Delay to ensure the message is sent
-    // PLG_write_5("slave1", "bom", "remus", "ok", "12");
-    // Serial2.println(messages5);
-    // delay(1000);
-    // PLG_write_4("master", "slave1", "bom", "not ok");
-    // Serial2.println(messages4);
-    // delay(1000); // Delay to ensure the message is sent
-
-    
-    if (Serial2.available())
-    {
-        receivedData = Serial2.readStringUntil('\n'); // Ví dụ nhận chuỗi
-        PLG_check_message();                          // Gọi xử lý chuỗi
-        thucthilenh(); // Execute the command
-    }
-    
 }

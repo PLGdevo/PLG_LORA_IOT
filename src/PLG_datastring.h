@@ -20,7 +20,7 @@ void PLG_write_4(String address, String address_slave, String namedata, String d
     DEBUG_PRINT("Sending packet: ");
     DEBUG_PRINTLN(messages4);
 }
-/*         dia chi gui | dia chi trung gian |dia chi cuoi | ten du lieu | du lieu    
+/*         dia chi gui | dia chi trung gian |dia chi cuoi | ten du lieu | du lieu
                         su dung cho 3 module                                */
 void PLG_write_5(String address, String address_slave, String address_remus, String namedata, String data)
 {
@@ -70,22 +70,25 @@ void PLG_read_5()
     address_remus = receivedData.substring(i2 + 1, i3);
     namedata = receivedData.substring(i3 + 1, i4);
     data = receivedData.substring(i4 + 1);
-    Serial.print("Address: ");
-    Serial.println(address);
-    Serial.print("Address Slave: ");
-    Serial.println(address_slave);
-    Serial.print("Address Remus: ");
-    Serial.println(address_remus);
-    Serial.print("Name Data: ");
-    Serial.println(namedata);
-    Serial.print("Data: ");
-    Serial.println(data);
+    DEBUG_PRINT("Address: ");
+    DEBUG_PRINTLN(address);
+    DEBUG_PRINT("Address Slave: ");
+    DEBUG_PRINTLN(address_slave);
+    DEBUG_PRINT("Address Remus: ");
+    DEBUG_PRINTLN(address_remus);
+    DEBUG_PRINT("Name Data: ");
+    DEBUG_PRINTLN(namedata);
+    DEBUG_PRINT("Data: ");
+    DEBUG_PRINTLN(data);
 }
 // Hàm đếm số dấu '|' trong chuỗi
-int PLG_count_separator(String str) {
+int PLG_count_separator(String str)
+{
     int count = 0;
-    for (int i = 0; i < str.length(); i++) {
-        if (str.charAt(i) == '|') {
+    for (int i = 0; i < str.length(); i++)
+    {
+        if (str.charAt(i) == '|')
+        {
             count++;
         }
     }
@@ -93,22 +96,33 @@ int PLG_count_separator(String str) {
 }
 
 // Hàm kiểm tra chuỗi 4 hay 5 trường
-void PLG_check_message() {
+void PLG_check_message()
+{
     int soDauPhanCach = PLG_count_separator(receivedData);
 
-    if (soDauPhanCach == 3) {
+    if (soDauPhanCach == 3)
+    {
         DEBUG_PRINTLN("Chuỗi có 4 trường dữ liệu.");
         PLG_read_4();
     }
-    else if (soDauPhanCach == 4) {
+    else if (soDauPhanCach == 4)
+    {
         DEBUG_PRINTLN("Chuỗi có 5 trường dữ liệu.");
         PLG_read_5();
     }
-    else {
+    else
+    {
         DEBUG_PRINT("Lỗi: Chuỗi không hợp lệ. Dấu '|': ");
         DEBUG_PRINTLN(soDauPhanCach);
     }
 }
 
+/* ban chi can goi ham nay ra la moi viec se dc giai quyet
+if (Serial2.available())
+    {
+        receivedData = Serial2.readStringUntil('\n'); // Ví dụ nhận chuỗi
+        PLG_check_message();                          // Gọi xử lý chuỗi
+        thucthilenh(); // Execute the command
+    }
+*/
 // các hàm trên dùng dể đọc chuỗi dữ liệu từ LoRa hoặc RS485
- 

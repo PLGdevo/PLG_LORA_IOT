@@ -11,7 +11,7 @@
 #define ERA_DEBUG
 #define SEN
 // #define ERA_DEBUG
-#define PLG_MASTER
+// #define PLG_MASTER
 
 #include <Arduino.h>
 

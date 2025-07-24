@@ -220,6 +220,22 @@ ERA_APP_LOOP()
 {
 
     PLG_check_mode_connect(); // Check the connection mode and update LED status
+    int packetSize = LoRa.parsePacket();
+    if (packetSize)
+    {
+        // Received a packet
+        DEBUG_PRINT("Received packet of size: ");
+        DEBUG_PRINTLN(packetSize);
+
+        // Read the packet
+        receivedData = "";
+        while (LoRa.available())
+        {
+            receivedData += (char)LoRa.read();
+        }
+        PLG_check_message(); // Check the received data
+        // PLG_execmd();
+    }
 }
 void PLG_master_loop()
 {
