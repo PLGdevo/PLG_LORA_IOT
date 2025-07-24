@@ -34,210 +34,52 @@ float ph_dat = 0.0;  // V13
 // digitalWrite(led_slave, HIGH); // Turn off LED for slave status
 // delay(20);                     // Delay to ensure the message is sent
 // digitalWrite(led_slave, LOW);  // Turn off LED for slave status
+void handleDeviceControl(String deviceName, String status, int ledPin)
+{
+    PLG_write_4("master", "slave1", deviceName.c_str(), status.c_str());
 
-ERA_WRITE(V0) // su dung bom
-{
-    value = param.getInt();
-    if (value == HIGH)
-    {
-        PLG_write_4("master", "slave1", "bom", "ok");
-        LoRa.beginPacket(); // Start a new packet
-        LoRa.print(messages4);
-        LoRa.endPacket();              // Finish the packet and send it
-        digitalWrite(led_slave, HIGH); // Turn off LED for slave status
-        delay(20);                     // Delay to ensure the message is sent
-        digitalWrite(led_slave, LOW);  // Turn off LED for slave status
-    }
-    else if (value == LOW)
-    {
-        PLG_write_4("master", "slave1", "bom", "not ok");
-        LoRa.beginPacket(); // Start a new packet
-        LoRa.print(messages4);
-        LoRa.endPacket();              // Finish the packet and send it
-        digitalWrite(led_slave, HIGH); // Turn off LED for slave status
-        delay(20);                     // Delay to ensure the message is sent
-        digitalWrite(led_slave, LOW);  // Turn on LED for slave status
-    }
-    else
-    {
-        DEBUG_PRINTLN("Invalid value for V0");
-    }
+    LoRa.beginPacket();
+    LoRa.print(messages4);
+    LoRa.endPacket();
+
+    digitalWrite(ledPin, HIGH);
+    delay(20);
+    digitalWrite(ledPin, LOW);
 }
-ERA_WRITE(V1) // su dung quat hut
+ERA_WRITE(V0) // Bơm
 {
     value = param.getInt();
-    if (value == HIGH)
-    {
-        PLG_write_4("master", "slave1", "fanhut", "ok");
-        LoRa.beginPacket(); // Start a new packet
-        LoRa.print(messages4);
-        LoRa.endPacket();              // Finish the packet and send it
-        digitalWrite(led_slave, HIGH); // Turn off LED for slave status
-        delay(20);                     // Delay to ensure the message is sent
-        digitalWrite(led_slave, LOW);  // Turn off LED for slave status
-    }
-    else if (value == LOW)
-    {
-        PLG_write_4("master", "slave1", "fanhut", "not ok");
-        LoRa.beginPacket(); // Start a new packet
-        LoRa.print(messages4);
-        LoRa.endPacket();              // Finish the packet and send it
-        digitalWrite(led_slave, HIGH); // Turn off LED for slave status
-        delay(20);                     // Delay to ensure the message is sent
-        digitalWrite(led_slave, LOW);  // Turn on LED for slave status
-    }
-    else
-    {
-        DEBUG_PRINTLN("Invalid value for V1");
-    }
+    handleDeviceControl("bom", value == HIGH ? "ok" : "not ok", led_slave);
 }
-ERA_WRITE(V2) // su dung cat nang
+ERA_WRITE(V1) // Quạt hút
 {
     value = param.getInt();
-    if (value == HIGH)
-    {
-        PLG_write_4("master", "slave1", "catnag", "ok");
-        LoRa.beginPacket(); // Start a new packet
-        LoRa.print(messages4);
-        LoRa.endPacket();              // Finish the packet and send it
-        digitalWrite(led_slave, HIGH); // Turn off LED for slave status
-        delay(20);                     // Delay to ensure the message is sent
-        digitalWrite(led_slave, LOW);  // Turn off LED for slave status
-    }
-    else if (value == LOW)
-    {
-        PLG_write_4("master", "slave1", "catnag", "not ok");
-        LoRa.beginPacket(); // Start a new packet
-        LoRa.print(messages4);
-        LoRa.endPacket();              // Finish the packet and send it
-        digitalWrite(led_slave, HIGH); // Turn off LED for slave status
-        delay(20);                     // Delay to ensure the message is sent
-        digitalWrite(led_slave, LOW);  // Turn on LED for slave status
-    }
-    else
-    {
-        DEBUG_PRINTLN("Invalid value for V1");
-    }
+    handleDeviceControl("fanhut", value == HIGH ? "ok" : "not ok", led_slave);
 }
-ERA_WRITE(V3) // su dung dinh duong 1
+ERA_WRITE(V2) // Cắt nâng
 {
     value = param.getInt();
+    handleDeviceControl("catnag", value == HIGH ? "ok" : "not ok", led_slave);
 }
-ERA_WRITE(V4) // su dung dinh duong 2
+ERA_WRITE(V5) // Quạt đảo khí
 {
     value = param.getInt();
+    handleDeviceControl("quat", value == HIGH ? "ok" : "not ok", led_slave);
 }
-ERA_WRITE(V5) // su dung quat dao khi
+ERA_WRITE(V6) // Bơm cây con
 {
     value = param.getInt();
-    if (value == HIGH)
-    {
-        PLG_write_4("master", "slave1", "quat", "ok");
-        LoRa.beginPacket(); // Start a new packet
-        LoRa.print(messages4);
-        LoRa.endPacket();              // Finish the packet and send it
-        digitalWrite(led_slave, HIGH); // Turn off LED for slave status
-        delay(20);                     // Delay to ensure the message is sent
-        digitalWrite(led_slave, LOW);  // Turn off LED for slave status
-    }
-    else if (value == LOW)
-    {
-        PLG_write_4("master", "slave1", "quat", "not ok");
-        LoRa.beginPacket(); // Start a new packet
-        LoRa.print(messages4);
-        LoRa.endPacket();              // Finish the packet and send it
-        digitalWrite(led_slave, HIGH); // Turn off LED for slave status
-        delay(20);                     // Delay to ensure the message is sent
-        digitalWrite(led_slave, LOW);  // Turn on LED for slave status
-    }
-    else
-    {
-        DEBUG_PRINTLN("Invalid value for V5");
-    }
+    handleDeviceControl("bom cay con", value == HIGH ? "ok" : "not ok", led_slave);
 }
-ERA_WRITE(V6) // su dung bom cay con
+ERA_WRITE(V7) // Đèn
 {
     value = param.getInt();
-    if (value == HIGH)
-    {
-        PLG_write_4("master", "slave1", "bom cay con", "ok");
-        LoRa.beginPacket(); // Start a new packet
-        LoRa.print(messages4);
-        LoRa.endPacket();              // Finish the packet and send it
-        digitalWrite(led_slave, HIGH); // Turn off LED for slave status
-        delay(20);                     // Delay to ensure the message is sent
-        digitalWrite(led_slave, LOW);  // Turn off LED for slave status
-    }
-    else if (value == LOW)
-    {
-        PLG_write_4("master", "slave1", "bom cay con", "not ok");
-        LoRa.beginPacket(); // Start a new packet
-        LoRa.print(messages4);
-        LoRa.endPacket();              // Finish the packet and send it
-        digitalWrite(led_slave, HIGH); // Turn off LED for slave status
-        delay(20);                     // Delay to ensure the message is sent
-        digitalWrite(led_slave, LOW);  // Turn on LED for slave status
-    }
-    else
-    {
-        DEBUG_PRINTLN("Invalid value for V6");
-    }
+    handleDeviceControl("den", value == HIGH ? "ok" : "not ok", led_slave);
 }
-ERA_WRITE(V7) // su dung Den
+ERA_WRITE(V8) // Phun sương
 {
     value = param.getInt();
-    if (value == HIGH)
-    {
-        PLG_write_4("master", "slave1", "den", "ok");
-        LoRa.beginPacket(); // Start a new packet
-        LoRa.print(messages4);
-        LoRa.endPacket();              // Finish the packet and send it
-        digitalWrite(led_slave, HIGH); // Turn off LED for slave status
-        delay(20);                     // Delay to ensure the message is sent
-        digitalWrite(led_slave, LOW);  // Turn off LED for slave status}
-    }
-    else if (value == LOW)
-    {
-        PLG_write_4("master", "slave1", "den", "not ok");
-        LoRa.beginPacket(); // Start a new packet
-        LoRa.print(messages4);
-        LoRa.endPacket();              // Finish the packet and send it
-        digitalWrite(led_slave, HIGH); // Turn off LED for slave status
-        delay(20);                     // Delay to ensure the message is sent
-        digitalWrite(led_slave, LOW);  // Turn on LED for slave status
-    }
-    else
-    {
-        DEBUG_PRINTLN("Invalid value for V7");
-    }
-}
-ERA_WRITE(V8) // su dung phun suong
-{
-    value = param.getInt();
-    if (value == HIGH)
-    {
-        PLG_write_4("master", "slave1", "phunsuong", "ok");
-        LoRa.beginPacket(); // Start a new packet
-        LoRa.print(messages4);
-        LoRa.endPacket();              // Finish the packet and send it
-        digitalWrite(led_slave, HIGH); // Turn off LED for slave status
-        delay(20);                     // Delay to ensure the message is sent
-        digitalWrite(led_slave, LOW);  // Turn off LED for slave status
-    }
-    else if (value == LOW)
-    {
-        PLG_write_4("master", "slave1", "phunsuong", "not ok");
-        LoRa.beginPacket(); // Start a new packet
-        LoRa.print(messages4);
-        LoRa.endPacket();              // Finish the packet and send it
-        digitalWrite(led_slave, HIGH); // Turn off LED for slave status
-        delay(20);                     // Delay to ensure the message is sent
-        digitalWrite(led_slave, LOW);  // Turn on LED for slave status
-    }
-    else
-    {
-        DEBUG_PRINTLN("Invalid value for V8");
-    }
+    handleDeviceControl("phunsuong", value == HIGH ? "ok" : "not ok", led_slave);
 }
 ERA_WRITE(V10) // nhiet do
 {
@@ -252,6 +94,14 @@ ERA_WRITE(V12) // lux
     value = param.getInt();
 }
 ERA_WRITE(V13) // PH dat
+{
+    value = param.getInt();
+}
+ERA_WRITE(V3) // su dung dinh duong 1
+{
+    value = param.getInt();
+}
+ERA_WRITE(V4) // su dung dinh duong 2
 {
     value = param.getInt();
 }
