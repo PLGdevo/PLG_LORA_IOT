@@ -1,0 +1,119 @@
+/* ---------------------------------------------------------------------
+ * PLG define cac mode doc chuoi du lieu\--------------------------*/
+#include <Arduino.h>
+#include <PLG_debug.hpp>
+#include <string.h>
+#include <LoRa.h>
+String address = "";
+String address_slave = ""; // Address of the slave device
+String address_remus = "";
+String namedata = "";
+String data = "";
+String receivedData = "";
+String messages4 = address + "|" + address_slave + "|" + namedata + "|" + data;
+String messages5 = address + "|" + address_slave + "|" + address_remus + "|" + namedata + "|" + data;
+
+void PLG_write_4(String address, String address_slave, String namedata, String data)
+{
+    messages4 = address + "|" + address_slave + "|" + namedata + "|" + data;
+    DEBUG_PRINT("Sending packet: ");
+    DEBUG_PRINTLN(messages4);
+}
+void PLG_write_5(String address, String address_slave, String address_remus, String namedata, String data)
+{
+    messages5 = address + "|" + address_slave + "|" + address_remus + "|" + namedata + "|" + data;
+    DEBUG_PRINT("Sending packet: ");
+    DEBUG_PRINTLN(messages5);
+}
+void PLG_read_4()
+{
+    int index1 = receivedData.indexOf('|');
+    int index2 = receivedData.indexOf('|', index1 + 1);
+    int index3 = receivedData.indexOf('|', index2 + 1);
+
+    if (index1 == -1 || index2 == -1 || index3 == -1)
+    {
+        DEBUG_PRINTLN("Chuỗi không hợp lệ!");
+        return;
+    }
+
+    address = receivedData.substring(0, index1);
+    address_slave = receivedData.substring(index1 + 1, index2);
+    namedata = receivedData.substring(index2 + 1, index3);
+    data = receivedData.substring(index3 + 1);
+    DEBUG_PRINT("Address: ");
+    DEBUG_PRINTLN(address);
+    DEBUG_PRINT("Address Slave: ");
+    DEBUG_PRINTLN(address_slave);
+    DEBUG_PRINT("Name Data: ");
+    DEBUG_PRINTLN(namedata);
+    DEBUG_PRINT("Data: ");
+    DEBUG_PRINTLN(data);
+}
+void PLG_read_5()
+{
+    int i1 = receivedData.indexOf('|');
+    int i2 = receivedData.indexOf('|', i1 + 1);
+    int i3 = receivedData.indexOf('|', i2 + 1);
+    int i4 = receivedData.indexOf('|', i3 + 1);
+
+    if (i1 == -1 || i2 == -1 || i3 == -1 || i4 == -1)
+    {
+        Serial.println("Chuỗi không hợp lệ!");
+        return;
+    }
+    address = receivedData.substring(0, i1);
+    address_slave = receivedData.substring(i1 + 1, i2);
+    address_remus = receivedData.substring(i2 + 1, i3);
+    namedata = receivedData.substring(i3 + 1, i4);
+    data = receivedData.substring(i4 + 1);
+    // Serial.print("Address: ");
+    // Serial.println(address);
+    // Serial.print("Address Slave: ");
+    // Serial.println(address_slave);
+    // Serial.print("Address Remus: ");
+    // Serial.println(address_remus);
+    // Serial.print("Name Data: ");
+    // Serial.println(namedata);
+    // Serial.print("Data: ");
+    // Serial.println(data);
+}
+// Hàm đếm số dấu '|' trong chuỗi
+int PLG_count_separator(String str) {
+    int count = 0;
+    for (int i = 0; i < str.length(); i++) {
+        if (str.charAt(i) == '|') {
+            count++;
+        }
+    }
+    return count;
+}
+
+// Hàm kiểm tra chuỗi 4 hay 5 trường
+void PLG_check_message() {
+    int soDauPhanCach = PLG_count_separator(receivedData);
+
+    if (soDauPhanCach == 3) {
+        DEBUG_PRINTLN("Chuỗi có 4 trường dữ liệu.");
+        PLG_read_4();
+    }
+    else if (soDauPhanCach == 4) {
+        DEBUG_PRINTLN("Chuỗi có 5 trường dữ liệu.");
+        PLG_read_5();
+    }
+    else {
+        DEBUG_PRINT("Lỗi: Chuỗi không hợp lệ. Dấu '|': ");
+        DEBUG_PRINTLN(soDauPhanCach);
+    }
+}
+//  if (Serial2.available())
+//  {
+//      char c = Serial2.read();
+//      cmd += c;
+//      if (c == '\n')
+//      {
+//          //   exeCmd(cmd);
+//          DEBUG_PRINT(cmd);
+//          cmd = "";
+//      } // end read uart2
+//  }
