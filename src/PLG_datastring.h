@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <PLG_debug.hpp>
 #include <string.h>
-#include <LoRa.h>
+
 String address = "";
 String address_slave = ""; // Address of the slave device
 String address_remus = "";
@@ -67,16 +67,16 @@ void PLG_read_5()
     address_remus = receivedData.substring(i2 + 1, i3);
     namedata = receivedData.substring(i3 + 1, i4);
     data = receivedData.substring(i4 + 1);
-    // Serial.print("Address: ");
-    // Serial.println(address);
-    // Serial.print("Address Slave: ");
-    // Serial.println(address_slave);
-    // Serial.print("Address Remus: ");
-    // Serial.println(address_remus);
-    // Serial.print("Name Data: ");
-    // Serial.println(namedata);
-    // Serial.print("Data: ");
-    // Serial.println(data);
+    Serial.print("Address: ");
+    Serial.println(address);
+    Serial.print("Address Slave: ");
+    Serial.println(address_slave);
+    Serial.print("Address Remus: ");
+    Serial.println(address_remus);
+    Serial.print("Name Data: ");
+    Serial.println(namedata);
+    Serial.print("Data: ");
+    Serial.println(data);
 }
 // Hàm đếm số dấu '|' trong chuỗi
 int PLG_count_separator(String str) {
@@ -106,14 +106,6 @@ void PLG_check_message() {
         DEBUG_PRINTLN(soDauPhanCach);
     }
 }
-//  if (Serial2.available())
-//  {
-//      char c = Serial2.read();
-//      cmd += c;
-//      if (c == '\n')
-//      {
-//          //   exeCmd(cmd);
-//          DEBUG_PRINT(cmd);
-//          cmd = "";
-//      } // end read uart2
-//  }
+
+// các hàm trên dùng dể đọc chuỗi dữ liệu từ LoRa hoặc RS485
+ 

@@ -2,7 +2,7 @@
 /**************************************************************
  *                PLG END CONFIG_WIFI_SENDER
  ***************************************************************/
-#include <PLG_debug.hpp>
+
 #include <PLG_set_era.h>
 #include <Wire.h>
 #include <SPI.h>
@@ -22,188 +22,40 @@
 #define RX 16            // RX pin for RS485 module
 
 int value = 0;
-// void PLG_data(string address_slave, string tendulieu, string dulieu)
-// {
-//     mes = address_slave + "|" + tendulieu + "|" + dulieu;
-//     DEBUG_PRINT("Sending packet: ");
-//     DEBUG_PRINTLN(mes);
-//     LoRa.beginPacket(); // Start a new packet
-//     LoRa.print(mes);
-//     LoRa.endPacket();              // Finish the packet and send it
-//     digitalWrite(led_slave, HIGH); // Turn off LED for slave status
-//     delay(20);                     // Delay to ensure the message is sent
-//     digitalWrite(led_slave, LOW);  // Turn off LED for slave status
-// }
-// ERA_WRITE(V0)
-// {
-//     value = param.getInt();
-//     if (value == HIGH)
-//     {
 
-//         // ERa.virtualWrite(V0, value = 0);
-//         address_slave = "slave1";
-//         tendulieu = "bom";
-//         dulieu = "ok";
-//         mes = address_slave + "|" + tendulieu + "|" + dulieu;
-//         DEBUG_PRINT("Sending packet: ");
-//         DEBUG_PRINTLN(mes);
-//         LoRa.beginPacket(); // Start a new packet
-//         LoRa.print(mes);
-//         // LoRa.write(1); // Write a byte to the packet
-//         LoRa.endPacket();              // Finish the packet and send it
-//         digitalWrite(led_slave, HIGH); // Turn off LED for slave status
-//         delay(20);                     // Delay to ensure the message is sent
-//         digitalWrite(led_slave, LOW);  // Turn off LED for slave status
-//     }
-//     else
-//     {
+// LoRa.beginPacket(); // Start a new packet
+// LoRa.print(mes);
+// LoRa.endPacket();              // Finish the packet and send it
+// digitalWrite(led_slave, HIGH); // Turn off LED for slave status
+// delay(20);                     // Delay to ensure the message is sent
+// digitalWrite(led_slave, LOW);  // Turn off LED for slave status
 
-//         // ERa.virtualWrite(V0, value = 1);
-//         address_slave = "slave1";
-//         tendulieu = "bom";
-//         dulieu = "not ok";
-//         mes = address_slave + "|" + tendulieu + "|" + dulieu;
-//         DEBUG_PRINT("Sending packet: ");
-//         DEBUG_PRINTLN(mes);
-//         LoRa.beginPacket(); // Start a new packet
-//         LoRa.print(mes);
-//         LoRa.endPacket();              // Finish the packet and send it
-//         digitalWrite(led_slave, HIGH); // Turn on LED for slave status
-//         delay(20);                     // Delay to ensure the message is sent
-//         digitalWrite(led_slave, LOW);  // Turn off LED for slave status
-//     }
-// }
-// ERA_WRITE(V5)
-// {
-//     value = param.getInt();
-//     if (value == HIGH)
-//     {
-//         // ERa.virtualWrite(V1, value = 0);
-//         address_slave = "slave1";
-//         tendulieu = "fandao";
-//         dulieu = "ok";
-//         mes = address_slave + "|" + tendulieu + "|" + dulieu;
-//         DEBUG_PRINT("Sending packet: ");
-//         DEBUG_PRINTLN(mes);
-//         LoRa.beginPacket(); // Start a new packet
-//         LoRa.print(mes);
-//         LoRa.endPacket();              // Finish the packet and send it
-//         digitalWrite(led_slave, HIGH); // Turn off LED for slave status
-//         delay(20);                     // Delay to ensure the message is sent
-//         digitalWrite(led_slave, LOW);  // Turn off LED for slave status
-//     }
-//     else
-//     {
-//         // ERa.virtualWrite(V1, value = 1);
-//         address_slave = "slave1";
-//         tendulieu = "fandao";
-//         dulieu = "not ok";
-//         mes = address_slave + "|" + tendulieu + "|" + dulieu;
-//         DEBUG_PRINT("Sending packet: ");
-//         DEBUG_PRINTLN(mes);
-//         LoRa.beginPacket(); // Start a new packet
-//         LoRa.print(mes);
-//         LoRa.endPacket();              // Finish the packet and send it
-//         digitalWrite(led_slave, HIGH); // Turn on LED for slave status
-//         delay(20);                     // Delay to ensure the message is sent
-//         digitalWrite(led_slave, LOW);  // Turn off LED for slave status
-//     }
-// }
-// ERA_WRITE(V1)
-// {
-//     value = param.getInt();
-//     if (value == HIGH)
-//     {
-//         // ERa.virtualWrite(V2, value = 0);
-//         address_slave = "slave1";
-//         tendulieu = "fanhut";
-//         dulieu = "ok";
-//         mes = address_slave + "|" + tendulieu + "|" + dulieu;
-//         DEBUG_PRINT("Sending packet: ");
-//         DEBUG_PRINTLN(mes);
-//         LoRa.beginPacket(); // Start a new packet
-//         LoRa.print(mes);
-//         LoRa.endPacket();              // Finish the packet and send it
-//         digitalWrite(led_slave, HIGH); // Turn off LED for slave status
-//         delay(20);                     // Delay to ensure the message is sent
-//         digitalWrite(led_slave, LOW);  // Turn off LED for slave status
-//     }
-//     else
-//     {
-//         // ERa.virtualWrite(V2, value = 1);
-//         address_slave = "slave1";
-//         tendulieu = "fanhut";
-//         dulieu = "not ok";
-//         mes = address_slave + "|" + tendulieu + "|" + dulieu;
-//         DEBUG_PRINT("Sending packet: ");
-//         DEBUG_PRINTLN(mes);
-//         LoRa.beginPacket(); // Start a new packet
-//         LoRa.print(mes);
-//         LoRa.endPacket();              // Finish the packet and send it
-//         digitalWrite(led_slave, HIGH); // Turn on LED for slave status
-//         delay(20);                     // Delay to ensure the message is sent
-//         digitalWrite(led_slave, LOW);  // Turn off LED for slave status
-//     }
-// }
-// ERA_WRITE(V2)
-// {
-//     value = param.getInt();
-//     if (value == HIGH)
-//     {
-//         // ERa.virtualWrite(V3, value = 0);
-//         address_slave = "slave1";
-//         tendulieu = "catnang";
-//         dulieu = "ok";
-//         mes = address_slave + "|" + tendulieu + "|" + dulieu;
-//         DEBUG_PRINT("Sending packet: ");
-//         DEBUG_PRINTLN(mes);
-//         LoRa.beginPacket(); // Start a new packet
-//         LoRa.print(mes);
-//         LoRa.endPacket();              // Finish the packet and send it
-//         digitalWrite(led_slave, HIGH); // Turn off LED for slave status
-//         delay(20);                     // Delay to ensure the message is sent
-//         digitalWrite(led_slave, LOW);  // Turn off LED for slave status
-//     }
-//     else
-//     {
-//         // ERa.virtualWrite(V3, value = 1);
-//         address_slave = "slave1";
-//         tendulieu = "catnang";
-//         dulieu = "not ok";
-//         mes = address_slave + "|" + tendulieu + "|" + dulieu;
-//         DEBUG_PRINT("Sending packet: ");
-//         DEBUG_PRINTLN(mes);
-//         LoRa.beginPacket(); // Start a new packet
-//         LoRa.print(mes);
-//         LoRa.endPacket();              // Finish the packet and send it
-//         digitalWrite(led_slave, HIGH); // Turn on LED for slave status
-//         delay(20);                     // Delay to ensure the message is sent
-//         digitalWrite(led_slave, LOW);  // Turn off LED for slave status
-//     }
-// }
-// ERA_WRITE(V3)
-// {
-//     value = param.getInt();
-
-//     address_slave = "slave1";
-//     tendulieu = "dinhduong1";
-//     dulieu = String(value); // Use the value as the data
-//     mes = address_slave + "|" + tendulieu + "|" + dulieu;
-//     DEBUG_PRINT("Sending packet: ");
-//     DEBUG_PRINTLN(mes);
-//     LoRa.beginPacket(); // Start a new packet
-//     LoRa.print(mes);
-//     LoRa.endPacket();              // Finish the packet and send it
-//     digitalWrite(led_slave, HIGH); // Turn off LED for slave status
-//     delay(20);                     // Delay to ensure the message is sent
-//     digitalWrite(led_slave, LOW);  // Turn off LED for slave status
-// }
+ERA_WRITE(V0)
+{
+    value = param.getInt();
+}
+ERA_WRITE(V5)
+{
+    value = param.getInt();
+}
+ERA_WRITE(V1)
+{
+    value = param.getInt();
+}
+ERA_WRITE(V2)
+{
+    value = param.getInt();
+}
+ERA_WRITE(V3)
+{
+    value = param.getInt();
+}
 void Setup_master()
 {
 
-    // #if defined(ERA_DEBUG)
+// #if defined(ERA_DEBUG)
     Serial.begin(115200);
-    // #endif
+// #endif
     pinMode(led_connected, OUTPUT);   // Set LED pin as output
     pinMode(led_master, OUTPUT);      // Set LED pin as output
     pinMode(led_slave, OUTPUT);       // Set LED pin as output
@@ -217,12 +69,11 @@ void Setup_master()
     /* Enable read/write WiFi credentials */
     ERa.setPersistent(true);
 #endif
-
     ERa.setModbusClient(mbTcpClient);
     ERa.setScanWiFi(true);
     ERa.begin(ssid, pass);
 
-    //     /* Setup timer called function every second */
+    /* Setup timer called function every second */
     // ERa.addInterval(1000L, timerEvent);
     DEBUG_PRINT("-----------------PLG_start----------\n\r");
     // initialize Serial Monitor
@@ -245,11 +96,8 @@ void Setup_master()
         delay(500);
     }
 }
-void PLG_check_mode_connect()
+void PLG_check_mode_connect() // Check the connection mode and update LED status
 {
-
-    // This function is called when the WiFi AP is running
-    // You can add your code here to handle the AP mode
     if (WiFi.getMode() == WIFI_AP || WiFi.getMode() == WIFI_AP_STA)
     {
         static unsigned long lastTime = 0;
@@ -270,7 +118,6 @@ ERA_APP_LOOP()
 {
 
     PLG_check_mode_connect(); // Check the connection mode and update LED status
-    
 }
 void PLG_master_loop()
 {
