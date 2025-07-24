@@ -164,28 +164,13 @@ void Setup_master()
     // #if defined(ERA_DEBUG)
     Serial.begin(115200);
     // #endif
+
     pinMode(led_connected, OUTPUT);   // Set LED pin as output
     pinMode(led_master, OUTPUT);      // Set LED pin as output
     pinMode(led_slave, OUTPUT);       // Set LED pin as output
     digitalWrite(led_slave, LOW);     // Turn off LED for slave status
     digitalWrite(led_master, HIGH);   // Turn on LED for master status
     digitalWrite(led_connected, LOW); // Turn off LED initially
-
-#if defined(BUTTON_PIN)
-    /* Initializing button. */
-    initButton();
-    /* Enable read/write WiFi credentials */
-    ERa.setPersistent(true);
-#endif
-    ERa.setModbusClient(mbTcpClient);
-    ERa.setScanWiFi(true);
-    ERa.begin(ssid, pass);
-
-    /* Setup timer called function every second */
-    // ERa.addInterval(1000L, timerEvent);
-    DEBUG_PRINT("-----------------PLG_start----------\n\r");
-    // initialize Serial Monitor
-    Serial.begin(115200);
     while (!Serial)
         ;
     DEBUG_PRINTLN("LoRa Sender");
@@ -203,6 +188,19 @@ void Setup_master()
         DEBUG_PRINT(".");
         delay(500);
     }
+#if defined(BUTTON_PIN)
+    /* Initializing button. */
+    initButton();
+    /* Enable read/write WiFi credentials */
+    ERa.setPersistent(true);
+#endif
+    ERa.setModbusClient(mbTcpClient);
+    ERa.setScanWiFi(true);
+    ERa.begin(ssid, pass);
+
+    /* Setup timer called function every second */
+    // ERa.addInterval(1000L, timerEvent);
+    DEBUG_PRINT("-----------------PLG_start----------\n\r");
 }
 void PLG_check_mode_connect() // Check the connection mode and update LED status
 {
@@ -223,7 +221,7 @@ void PLG_check_mode_connect() // Check the connection mode and update LED status
     }
 }
 // Hàm xử lý cảm biến
-void PLG_data_Sensor(String name, String value)
+void PLG_data_Sensor(String name, String value, int ledPin)
 {
     float val = value.toFloat();
     if (isnan(val))
@@ -282,13 +280,16 @@ void PLG_data_Sensor(String name, String value)
         DEBUG_PRINT("Tên dữ liệu không hợp lệ: ");
         DEBUG_PRINTLN(name);
     }
+    digitalWrite(ledPin, HIGH);
+    delay(20);
+    digitalWrite(ledPin, LOW);
 }
 
 void PLG_thucthilenh() // Execute the command
 {
     if (address_slave.startsWith("master"))
     {
-        PLG_data_Sensor(namedata, data); // Process sensor data
+        PLG_data_Sensor(namedata, data, led_slave); // Process sensor data
     }
 }
 ERA_APP_LOOP()
