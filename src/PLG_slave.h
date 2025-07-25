@@ -5,7 +5,14 @@
 #include <LoRa.h>
 #include <string.h>
 #include <hardwareSerial.h>
+
+
+
 // #define PLG_sensor
+
+
+
+
 // define the pins used by the transceiver module
 #define ss 05            // Slave Select pin
 #define rst 04           // Reset pin
@@ -73,11 +80,15 @@ void thucthilenh()
         {
 
             DEBUG_PRINTLN("bom ON");
+            PLG_write_4("slave1", "PLG_relay", "bom", "ON");
+            SEN_PRINTLN(messages4);
         }
         else if (data.startsWith("not ok"))
         {
 
             DEBUG_PRINTLN("bom OFF");
+            PLG_write_4("slave1", "PLG_relay", "bom", "OFF");
+            SEN_PRINTLN(messages4);
         }
     }
     else if (address_slave.startsWith("slave1") && namedata.startsWith("quat"))
@@ -86,11 +97,15 @@ void thucthilenh()
         {
 
             DEBUG_PRINTLN("quat ON");
+            PLG_write_4("slave1", "PLG_relay", "quat", "ON");
+            SEN_PRINTLN(messages4);
         }
         else if (data.startsWith("not ok"))
         {
 
             DEBUG_PRINTLN("quat OFF");
+            PLG_write_4("slave1", "PLG_relay", "quat", "OFF");
+            SEN_PRINTLN(messages4);
         }
     }
     else if (address_slave.startsWith("slave1") && namedata.startsWith("fanhut"))
@@ -99,11 +114,15 @@ void thucthilenh()
         {
 
             DEBUG_PRINTLN("quat hut ON");
+            PLG_write_4("slave1", "PLG_relay", "fanhut", "ON");
+            SEN_PRINTLN(messages4);
         }
         else if (data.startsWith("not ok"))
         {
 
             DEBUG_PRINTLN("quat hut OFF");
+            PLG_write_4("slave1", "PLG_relay", "fanhut", "OFF");
+            SEN_PRINTLN(messages4);
         }
     }
     else if (address_slave.startsWith("slave1") && namedata.startsWith("catnag"))
@@ -112,13 +131,68 @@ void thucthilenh()
         {
 
             DEBUG_PRINTLN("cat nang ON");
+            PLG_write_4("slave1","PLG_relay","catnag","ON");
+            SEN_PRINTLN(messages4);
         }
         else if (data.startsWith("not ok"))
         {
 
             DEBUG_PRINTLN("cat nang OFF");
+            PLG_write_4("slave1","PLG_relay","catnag","OFF");
+            SEN_PRINTLN(messages4);
         }
     }
+    else if (address_slave.startsWith("slave1") && namedata.startsWith("phunsuong"))
+    {
+        if (data.startsWith("ok"))
+        {
+
+            DEBUG_PRINTLN("phunsuong ON");
+            PLG_write_4("slave1","PLG_relay","phunsuong","ON");
+            SEN_PRINTLN(messages4);
+        }
+        else if (data.startsWith("not ok"))
+        {
+
+            DEBUG_PRINTLN("phunsuong OFF");
+            PLG_write_4("slave1","PLG_relay","phunsuong","OFF");
+            SEN_PRINTLN(messages4);
+        }
+    }
+    else if (address_slave.startsWith("slave1") && namedata.startsWith("bomccon"))
+    {
+        if (data.startsWith("ok"))
+        {
+
+            DEBUG_PRINTLN("bomccon ON");
+            PLG_write_4("slave1","PLG_relay","bomccon","ON");
+            SEN_PRINTLN(messages4);
+        }
+        else if (data.startsWith("not ok"))
+        {
+
+            DEBUG_PRINTLN("bomcconOFF");
+            PLG_write_4("slave1","PLG_relay","bomccon","OFF");
+            SEN_PRINTLN(messages4);
+        }
+    }
+    else if (address_slave.startsWith("slave1") && namedata.startsWith("den"))
+    {
+        if (data.startsWith("ok"))
+        {
+
+            DEBUG_PRINTLN("den ON");
+            PLG_write_4("slave1","PLG_relay","den","ON");
+            SEN_PRINTLN(receivedData);
+        }
+        else if (data.startsWith("not ok"))
+        {
+
+            DEBUG_PRINTLN("den OFF");
+            PLG_write_4("slave1","PLG_relay","den","OFF");
+            SEN_PRINTLN(receivedData);
+        }
+    }    
     else
     {
         DEBUG_PRINTLN("Khong co lenh nao duoc thuc hien");
@@ -140,12 +214,12 @@ void loop_slave()
             receivedData += (char)LoRa.read();
         }
         PLG_check_message(); // Check the received data
-        DEBUG_PRINTF("temp: %.2f   hum: %.2f   lux: %.2f   PH-dat: %.2f\n", temp, hum, lux, ph_dat);
-        digitalWrite(led_connected, HIGH);
+        // DEBUG_PRINTF("temp: %.2f   hum: %.2f   lux: %.2f   PH-dat: %.2f\n", temp, hum, lux, ph_dat);
+        // digitalWrite(led_connected, HIGH);
 
-        delay(20);
-        digitalWrite(led_connected, LOW);
-        // thucthilenh();       // Execute the command
+        // delay(20);
+        // digitalWrite(led_connected, LOW);
+        thucthilenh();       // Execute the command
     }
 }
 /*------------------- board cam bien---------------------------------------------*/

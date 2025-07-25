@@ -69,7 +69,7 @@ ERA_WRITE(V5) // Quạt đảo khí
 ERA_WRITE(V6) // Bơm cây con
 {
     value = param.getInt();
-    handleDeviceControl("bom cay con", value == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl("bomccon", value == HIGH ? "ok" : "not ok", led_slave);
 }
 ERA_WRITE(V7) // Đèn
 {
