@@ -5,7 +5,7 @@
 #include <LoRa.h>
 #include <string.h>
 #include <hardwareSerial.h>
-
+// #define PLG_sensor
 // define the pins used by the transceiver module
 #define ss 05            // Slave Select pin
 #define rst 04           // Reset pin
@@ -18,6 +18,13 @@
 #define TX 17            // TX pin for RS485 module
 #define RX 16            // RX pin for RS485 module
 
+unsigned long lastTime = 0;
+float temp = 0.0;    // V10
+float hum = 0.0;     // V11
+float lux = 0.0;     // V12
+float ph_nuoc = 0.0; // V20
+float ec_nuoc = 0.0; // V19
+float ph_dat = 0.0;  // V13
 // String receivedData = "";
 String cmd = "";
 
@@ -47,7 +54,16 @@ void Setup_slave()
     // Initialize RS485 Modbus Master
     Serial2.begin(115200, SERIAL_8N1, RX, TX); // Initialize Serial2 for RS485 communication
 }
-
+void sen_lora_data_4()
+{
+    // Example of sending sensor data
+    LoRa.beginPacket(); // Start a new packet
+    LoRa.print(messages4);
+    LoRa.endPacket();               // Finish the packet and send it
+    digitalWrite(led_master, HIGH); // Turn off LED for slave status
+    delay(20);                      // Delay to ensure the message is sent
+    digitalWrite(led_master, LOW);  // Turn off LED for slave status
+}
 void thucthilenh()
 {
     if (address_slave.startsWith("slave1") && namedata.startsWith("bom"))
@@ -108,9 +124,8 @@ void thucthilenh()
         DEBUG_PRINTLN("Khong co lenh nao duoc thuc hien");
     }
 }
-void PLG_slave_loop()
+void loop_slave()
 {
-
     int packetSize = LoRa.parsePacket();
     if (packetSize)
     {
@@ -125,16 +140,51 @@ void PLG_slave_loop()
             receivedData += (char)LoRa.read();
         }
         PLG_check_message(); // Check the received data
-        thucthilenh();       // Execute the command
-    }
-    PLG_write_4("slave1", "master", "hum", "50.7");
-    LoRa.beginPacket(); // Start a new packet
-    LoRa.print(messages4);
-    LoRa.endPacket();              // Finish the packet and send it
-    digitalWrite(led_master, HIGH); // Turn off LED for slave status
-    delay(20);                     // Delay to ensure the message is sent
-    digitalWrite(led_master, LOW);  // Turn off LED for slave status
-    delay(1000); // Delay to avoid flooding the LoRa network
-    
+        DEBUG_PRINTF("temp: %.2f   hum: %.2f   lux: %.2f   PH-dat: %.2f\n", temp, hum, lux, ph_dat);
+        digitalWrite(led_connected, HIGH);
 
+        delay(20);
+        digitalWrite(led_connected, LOW);
+        // thucthilenh();       // Execute the command
+    }
+}
+/*------------------- board cam bien---------------------------------------------*/
+
+void sen_data_cambien()
+{
+    // Example of sending sensor data
+    PLG_write_4("slave2", "slave1", "temp", String(temp, 2));
+    sen_lora_data_4();
+    PLG_write_4("slave2", "slave1", "hum", String(hum, 2));
+    sen_lora_data_4();
+    PLG_write_4("slave2", "slave1", "lux", String(lux, 2));
+    sen_lora_data_4();
+    // PLG_write_4("slave2", "slave1", "ph_nuoc", String(ph_nuoc, 2));
+    // sen_lora_data_4();
+    // PLG_write_4("slave2", "slave1", "ec_nuoc", String(ec_nuoc, 2));
+    // sen_lora_data_4();
+    PLG_write_4("slave2", "slave1", "ph_dat", String(ph_dat, 2));
+    sen_lora_data_4();
+    DEBUG_PRINTF("temp: %.2f   hum: %.2f   lux: %.2f   PH-dat: %.2f\n", temp, hum, lux, ph_dat);
+}
+void loop_cambien()
+{
+    unsigned long currentTime = millis();
+
+    if (currentTime - lastTime >= 2000)
+    {
+        // Gửi dữ liệu cảm biến mỗi 2 giây
+        temp = hum = lux = ph_dat = temp + 0.5;
+        sen_data_cambien();
+        lastTime = currentTime;
+    }
+}
+
+void PLG_slave_loop()
+{
+#if defined(PLG_sensor)
+    loop_cambien();
+#else
+    loop_slave();
+#endif
 }

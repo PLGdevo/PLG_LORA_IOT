@@ -116,6 +116,7 @@ ERA_WRITE(V15) // dinh duong 4
 ERA_WRITE(V16) // bom_1
 {
     value = param.getInt();
+    
 }
 ERA_WRITE(V17) // bom_2
 {

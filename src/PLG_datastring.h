@@ -20,6 +20,7 @@ void PLG_write_4(String address, String address_slave, String namedata, String d
     DEBUG_PRINT("Sending packet: ");
     DEBUG_PRINTLN(messages4);
 }
+
 /*         dia chi gui | dia chi trung gian |dia chi cuoi | ten du lieu | du lieu
                         su dung cho 3 module                                */
 void PLG_write_5(String address, String address_slave, String address_remus, String namedata, String data)
@@ -44,6 +45,10 @@ void PLG_read_4()
     address_slave = receivedData.substring(index1 + 1, index2);
     namedata = receivedData.substring(index2 + 1, index3);
     data = receivedData.substring(index3 + 1);
+    messages4 = address + "|" + address_slave + "|" + namedata + "|" + data;
+    DEBUG_PRINT("Sending packet: ");
+    DEBUG_PRINTLN(messages4);
+
     // DEBUG_PRINT("Address: ");
     // DEBUG_PRINTLN(address);
     // DEBUG_PRINT("Address Slave: ");
@@ -70,6 +75,9 @@ void PLG_read_5()
     address_remus = receivedData.substring(i2 + 1, i3);
     namedata = receivedData.substring(i3 + 1, i4);
     data = receivedData.substring(i4 + 1);
+    messages5 = address + "|" + address_slave + "|" + address_remus + "|" + namedata + "|" + data;
+    DEBUG_PRINT("Sending packet: ");
+    DEBUG_PRINTLN(messages5);
     // DEBUG_PRINT("Address: ");
     // DEBUG_PRINTLN(address);
     // DEBUG_PRINT("Address Slave: ");
@@ -102,12 +110,12 @@ void PLG_check_message()
 
     if (soDauPhanCach == 3)
     {
-        DEBUG_PRINTLN("Chuỗi có 4 trường dữ liệu.");
+        // DEBUG_PRINTLN("Chuỗi có 4 trường dữ liệu.");
         PLG_read_4();
     }
     else if (soDauPhanCach == 4)
     {
-        DEBUG_PRINTLN("Chuỗi có 5 trường dữ liệu.");
+        // DEBUG_PRINTLN("Chuỗi có 5 trường dữ liệu.");
         PLG_read_5();
     }
     else
