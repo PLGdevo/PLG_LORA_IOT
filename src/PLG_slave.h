@@ -6,12 +6,7 @@
 #include <string.h>
 #include <hardwareSerial.h>
 
-
-
 // #define PLG_sensor
-
-
-
 
 // define the pins used by the transceiver module
 #define ss 05            // Slave Select pin
@@ -32,6 +27,7 @@ float lux = 0.0;     // V12
 float ph_nuoc = 0.0; // V20
 float ec_nuoc = 0.0; // V19
 float ph_dat = 0.0;  // V13
+bool bom, catnag, den, funsuong, daokhi, quathut, bomcaycon;
 // String receivedData = "";
 String cmd = "";
 
@@ -131,14 +127,14 @@ void thucthilenh()
         {
 
             DEBUG_PRINTLN("cat nang ON");
-            PLG_write_4("slave1","PLG_relay","catnag","ON");
+            PLG_write_4("slave1", "PLG_relay", "catnag", "ON");
             SEN_PRINTLN(messages4);
         }
         else if (data.startsWith("not ok"))
         {
 
             DEBUG_PRINTLN("cat nang OFF");
-            PLG_write_4("slave1","PLG_relay","catnag","OFF");
+            PLG_write_4("slave1", "PLG_relay", "catnag", "OFF");
             SEN_PRINTLN(messages4);
         }
     }
@@ -148,14 +144,14 @@ void thucthilenh()
         {
 
             DEBUG_PRINTLN("phunsuong ON");
-            PLG_write_4("slave1","PLG_relay","phunsuong","ON");
+            PLG_write_4("slave1", "PLG_relay", "phunsuong", "ON");
             SEN_PRINTLN(messages4);
         }
         else if (data.startsWith("not ok"))
         {
 
             DEBUG_PRINTLN("phunsuong OFF");
-            PLG_write_4("slave1","PLG_relay","phunsuong","OFF");
+            PLG_write_4("slave1", "PLG_relay", "phunsuong", "OFF");
             SEN_PRINTLN(messages4);
         }
     }
@@ -165,14 +161,14 @@ void thucthilenh()
         {
 
             DEBUG_PRINTLN("bomccon ON");
-            PLG_write_4("slave1","PLG_relay","bomccon","ON");
+            PLG_write_4("slave1", "PLG_relay", "bomccon", "ON");
             SEN_PRINTLN(messages4);
         }
         else if (data.startsWith("not ok"))
         {
 
             DEBUG_PRINTLN("bomcconOFF");
-            PLG_write_4("slave1","PLG_relay","bomccon","OFF");
+            PLG_write_4("slave1", "PLG_relay", "bomccon", "OFF");
             SEN_PRINTLN(messages4);
         }
     }
@@ -182,17 +178,72 @@ void thucthilenh()
         {
 
             DEBUG_PRINTLN("den ON");
-            PLG_write_4("slave1","PLG_relay","den","ON");
-            SEN_PRINTLN(receivedData);
+            PLG_write_4("slave1", "PLG_relay", "den", "ON");
+            SEN_PRINTLN(messages4);
         }
         else if (data.startsWith("not ok"))
         {
 
             DEBUG_PRINTLN("den OFF");
-            PLG_write_4("slave1","PLG_relay","den","OFF");
-            SEN_PRINTLN(receivedData);
+            PLG_write_4("slave1", "PLG_relay", "den", "OFF");
+            SEN_PRINTLN(messages4);
         }
-    }    
+    }
+    else if (address_slave.startsWith("slave1") && namedata.startsWith("wifi"))
+    {
+        if (data.startsWith("connected"))
+        {
+
+            PLG_write_4("slave1", "PLG_relay", "requet", "run");
+            SEN_PRINTLN(messages4)
+        }
+    }
+    else if (address.startsWith("PLG_relay") && address_slave.startsWith("slave1"))
+    {
+        if (namedata.startsWith("bom"))
+        {
+            data=bom;
+            PLG_write_4("slave1", "master", "bom", String(bom));
+            sen_lora_data_4();
+        }
+        else if (namedata.startsWith("catnag"))
+        {
+            data=catnag;
+            PLG_write_4("slave1", "master", "catnag", String(catnag));
+            sen_lora_data_4();
+        }
+        else if (namedata.startsWith("den"))
+        {
+            data=den;
+            PLG_write_4("slave1", "master", "den", String(den));
+            sen_lora_data_4();
+        }
+        else if (namedata.startsWith("funsuong"))
+        {
+            data=funsuong;
+            PLG_write_4("slave1", "master", "funsuong", String(funsuong));
+            sen_lora_data_4();
+        }
+        else if (namedata.startsWith("daokhi"))
+        {
+            data=daokhi;
+            PLG_write_4("slave1", "master", "daokhi", String(daokhi));
+            sen_lora_data_4();
+        }
+        else if (namedata.startsWith("quathut"))
+        {
+            data=quathut;
+            PLG_write_4("slave1", "master", "quathut", String(quathut));
+            sen_lora_data_4();
+        }
+        else if (namedata.startsWith("bomcaycon"))
+        {
+            data=bomcaycon;
+            PLG_write_4("slave1", "master", "bomcaycon", String(bomcaycon));
+            sen_lora_data_4();
+        }
+        
+    }
     else
     {
         DEBUG_PRINTLN("Khong co lenh nao duoc thuc hien");
@@ -215,11 +266,16 @@ void loop_slave()
         }
         PLG_check_message(); // Check the received data
         // DEBUG_PRINTF("temp: %.2f   hum: %.2f   lux: %.2f   PH-dat: %.2f\n", temp, hum, lux, ph_dat);
-        // digitalWrite(led_connected, HIGH);
-
-        // delay(20);
-        // digitalWrite(led_connected, LOW);
-        thucthilenh();       // Execute the command
+        digitalWrite(led_connected, HIGH);
+        delay(20);
+        digitalWrite(led_connected, LOW);
+        thucthilenh(); // Execute the command
+    }
+    if (Serial2.available())
+    {
+        receivedData = Serial2.readStringUntil('\n'); // Ví dụ nhận chuỗi
+        PLG_check_message();                          // Gọi xử lý chuỗi
+        thucthilenh();                                // Execute the command
     }
 }
 /*------------------- board cam bien---------------------------------------------*/

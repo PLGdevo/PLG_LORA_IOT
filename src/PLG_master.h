@@ -20,7 +20,8 @@
 #define led_slave 33     // LED pin for slave status
 #define TX 17            // TX pin for RS485 module
 #define RX 16            // RX pin for RS485 module
-
+unsigned long lastCheck = 0;
+const unsigned long interval = 5000; // 5 giây
 int value = 0;
 float temp = 0.0;    // V10
 float hum = 0.0;     // V11
@@ -116,7 +117,6 @@ ERA_WRITE(V15) // dinh duong 4
 ERA_WRITE(V16) // bom_1
 {
     value = param.getInt();
-    
 }
 ERA_WRITE(V17) // bom_2
 {
@@ -220,6 +220,38 @@ void PLG_check_mode_connect() // Check the connection mode and update LED status
     {
         ERa.connected() ? digitalWrite(led_connected, HIGH) : digitalWrite(led_connected, LOW);
     }
+
+    if (millis() - lastCheck >= interval) // Check if 400 milliseconds have passed
+    {
+        if (ERa.connected() == true)
+        {
+            lastCheck = millis();
+            digitalWrite(led_connected, HIGH);
+            PLG_write_4("master", "slave1", "wifi", "connected");
+            DEBUG_PRINTLN(messages4);
+            LoRa.beginPacket();
+            LoRa.print(messages4);
+            LoRa.endPacket();
+
+            digitalWrite(led_slave, HIGH);
+            delay(20);
+            digitalWrite(led_slave, LOW);
+        }
+        else
+        {
+            lastCheck = millis();
+            digitalWrite(led_connected, HIGH);
+            PLG_write_4("master", "slave1", "wifi", "disconnected");
+            DEBUG_PRINTLN(messages4);
+            LoRa.beginPacket();
+            LoRa.print(messages4);
+            LoRa.endPacket();
+
+            digitalWrite(led_slave, HIGH);
+            delay(20);
+            digitalWrite(led_slave, LOW);
+        }
+    }
 }
 // Hàm xử lý cảm biến
 void PLG_data_Sensor(String name, String value, int ledPin)
@@ -282,7 +314,7 @@ void PLG_data_Sensor(String name, String value, int ledPin)
         DEBUG_PRINTLN(name);
     }
     digitalWrite(ledPin, HIGH);
-    delay(20);
+    delay(10);
     digitalWrite(ledPin, LOW);
 }
 
