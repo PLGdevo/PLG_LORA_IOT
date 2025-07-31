@@ -8,6 +8,7 @@
 #include <SPI.h>
 #include <LoRa.h>
 #include <PLG_datastring.h>
+#include <EEPROM.h>
 
 // define the pins used by the transceiver module
 #define ss 05            // Slave Select pin
@@ -20,6 +21,15 @@
 #define led_slave 33     // LED pin for slave status
 #define TX 17            // TX pin for RS485 module
 #define RX 16            // RX pin for RS485 module
+
+#define ADDR_BOM 0
+#define ADDR_CATNAG 1
+#define ADDR_DEN 2
+#define ADDR_PHUNSUONG 3
+#define ADDR_DAOKHI 4
+#define ADDR_QUATHUT 5
+#define ADDR_BOMCCON 6
+
 unsigned long lastCheck = 0;
 const unsigned long interval = 5000; // 5 giây
 int value = 0;
@@ -29,6 +39,19 @@ float lux = 0.0;     // V12
 float ph_nuoc = 0.0; // V20
 float ec_nuoc = 0.0; // V19
 float ph_dat = 0.0;  // V13
+struct ThietBi
+{
+    int bom=0;
+    int catnag=0;
+    int den=0;
+    int phunsuong=0;
+    int daokhi=0;
+    int quathut=0;
+    int bomcaycon=0;
+};
+
+ThietBi tb;
+
 // LoRa.beginPacket(); // Start a new packet
 // LoRa.print(mes);
 // LoRa.endPacket();              // Finish the packet and send it
@@ -47,40 +70,68 @@ void handleDeviceControl(String deviceName, String status, int ledPin)
     delay(20);
     digitalWrite(ledPin, LOW);
 }
+void PLG_WRITE_EEPROOM()
+{
+    EEPROM.write(ADDR_BOM, tb.bom);
+    EEPROM.write(ADDR_CATNAG, tb.catnag);
+    EEPROM.write(ADDR_DEN, tb.den);
+    EEPROM.write(ADDR_PHUNSUONG, tb.phunsuong);
+    EEPROM.write(ADDR_DAOKHI, tb.daokhi);
+    EEPROM.write(ADDR_QUATHUT, tb.quathut);
+    EEPROM.write(ADDR_BOMCCON, tb.bomcaycon);
+    EEPROM.commit();
+}
+void PLG_READ_EEPROOM()
+{
+    tb.bom = EEPROM.read(ADDR_BOM);
+    tb.catnag = EEPROM.read(ADDR_CATNAG);
+    tb.den = EEPROM.read(ADDR_DEN);
+    tb.phunsuong = EEPROM.read(ADDR_PHUNSUONG);
+    tb.daokhi = EEPROM.read(ADDR_DAOKHI);
+    tb.quathut = EEPROM.read(ADDR_QUATHUT);
+    tb.bomcaycon = EEPROM.read(ADDR_BOMCCON);
+}
 ERA_WRITE(V0) // Bơm
 {
-    value = param.getInt();
-    handleDeviceControl("bom", value == HIGH ? "ok" : "not ok", led_slave);
+    tb.bom = param.getInt();
+    PLG_WRITE_EEPROOM();
+    handleDeviceControl("bom", tb.bom == HIGH ? "ok" : "not ok", led_slave);
 }
 ERA_WRITE(V1) // Quạt hút
 {
-    value = param.getInt();
-    handleDeviceControl("fanhut", value == HIGH ? "ok" : "not ok", led_slave);
+    tb.quathut = param.getInt();
+    PLG_WRITE_EEPROOM();
+    handleDeviceControl("fanhut", tb.quathut == HIGH ? "ok" : "not ok", led_slave);
 }
 ERA_WRITE(V2) // Cắt nâng
 {
-    value = param.getInt();
-    handleDeviceControl("catnag", value == HIGH ? "ok" : "not ok", led_slave);
+    tb.catnag = param.getInt();
+    PLG_WRITE_EEPROOM();
+    handleDeviceControl("catnag", tb.catnag == HIGH ? "ok" : "not ok", led_slave);
 }
 ERA_WRITE(V5) // Quạt đảo khí
 {
-    value = param.getInt();
-    handleDeviceControl("quat", value == HIGH ? "ok" : "not ok", led_slave);
+    tb.daokhi = param.getInt();
+    PLG_WRITE_EEPROOM();
+    handleDeviceControl("quat", tb.daokhi == HIGH ? "ok" : "not ok", led_slave);
 }
 ERA_WRITE(V6) // Bơm cây con
 {
-    value = param.getInt();
-    handleDeviceControl("bomccon", value == HIGH ? "ok" : "not ok", led_slave);
+    tb.bomcaycon = param.getInt();
+    PLG_WRITE_EEPROOM();
+    handleDeviceControl("bomccon", tb.bomcaycon == HIGH ? "ok" : "not ok", led_slave);
 }
 ERA_WRITE(V7) // Đèn
 {
-    value = param.getInt();
-    handleDeviceControl("den", value == HIGH ? "ok" : "not ok", led_slave);
+    tb.den = param.getInt();
+    PLG_WRITE_EEPROOM();
+    handleDeviceControl("den", tb.den == HIGH ? "ok" : "not ok", led_slave);
 }
 ERA_WRITE(V8) // Phun sương
 {
-    value = param.getInt();
-    handleDeviceControl("phunsuong", value == HIGH ? "ok" : "not ok", led_slave);
+    tb.phunsuong = param.getInt();
+    PLG_WRITE_EEPROOM();
+    handleDeviceControl("phunsuong", tb.phunsuong == HIGH ? "ok" : "not ok", led_slave);
 }
 ERA_WRITE(V10) // nhiet do
 {
@@ -164,6 +215,7 @@ void Setup_master()
 
     // #if defined(ERA_DEBUG)
     Serial.begin(115200);
+    EEPROM.begin(512);
     // #endif
 
     pinMode(led_connected, OUTPUT);   // Set LED pin as output
@@ -202,6 +254,14 @@ void Setup_master()
     /* Setup timer called function every second */
     // ERa.addInterval(1000L, timerEvent);
     DEBUG_PRINT("-----------------PLG_start----------\n\r");
+    PLG_READ_EEPROOM();
+    ERa.virtualWrite(V0, tb.bom);
+    ERa.virtualWrite(V1, tb.quathut);
+    ERa.virtualWrite(V2, tb.catnag);
+    ERa.virtualWrite(V5, tb.daokhi);
+    ERa.virtualWrite(V6, tb.bomcaycon);
+    ERa.virtualWrite(V7, tb.den);
+    ERa.virtualWrite(V8, tb.phunsuong);
 }
 void PLG_check_mode_connect() // Check the connection mode and update LED status
 {
@@ -236,6 +296,15 @@ void PLG_check_mode_connect() // Check the connection mode and update LED status
             digitalWrite(led_slave, HIGH);
             delay(20);
             digitalWrite(led_slave, LOW);
+            Serial.println("----------- TRẠNG THÁI THIẾT BỊ -----------");
+            Serial.print("Bơm        (tb.bom): ");         Serial.println(tb.bom);
+            Serial.print("Quạt hút   (tb.quathut): ");     Serial.println(tb.quathut);
+            Serial.print("Cắt nâng   (tb.catnag): ");      Serial.println(tb.catnag);
+            Serial.print("Đảo khí    (tb.daokhi): ");      Serial.println(tb.daokhi);
+            Serial.print("Bơm cây con(tb.bomcaycon): ");   Serial.println(tb.bomcaycon);
+            Serial.print("Đèn        (tb.den): ");         Serial.println(tb.den);
+            Serial.print("Phun sương(tb.phunsuong): ");    Serial.println(tb.phunsuong);
+            Serial.println("------------------------------------------");
         }
         else
         {
