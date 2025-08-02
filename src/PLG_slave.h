@@ -20,17 +20,35 @@
 #define TX 17            // TX pin for RS485 module
 #define RX 16            // RX pin for RS485 module
 
+#define BOM "V1"
+#define BOMCCON "V2"
+#define CATNAG "V3"
+#define DEN "V4"
+#define PHUNSUONG "V5"
+#define DAOKHI "V6"
+#define QUATHUT "V7"
+
 unsigned long lastTime = 0;
-float temp = 0.0;    // V10
-float hum = 0.0;     // V11
-float lux = 0.0;     // V12
-float ph_nuoc = 0.0; // V20
-float ec_nuoc = 0.0; // V19
-float ph_dat = 0.0;  // V13
-bool bom, catnag, den, funsuong, daokhi, quathut, bomcaycon;
+float temp = 0.0;          // V10
+float hum = 0.0;           // V11
+float lux = 0.0;           // V12
+float ph_nuoc = 0.0;       // V20
+float ec_nuoc = 0.0;       // V19
+float ph_dat = 0.0;        // V13
+bool start_sensor = false; // Flag to indicate if sensor data should be processed
+
 // String receivedData = "";
 String cmd = "";
-
+void sen_lora_data_4()
+{
+    // Example of sending sensor data
+    LoRa.beginPacket(); // Start a new packet
+    LoRa.print(messages4);
+    LoRa.endPacket();               // Finish the packet and send it
+    digitalWrite(led_master, HIGH); // Turn off LED for slave status
+    delay(20);                      // Delay to ensure the message is sent
+    digitalWrite(led_master, LOW);  // Turn off LED for slave status
+}
 void Setup_slave()
 {
 
@@ -56,199 +74,117 @@ void Setup_slave()
     DEBUG_PRINTLN("PLG RUNNING SLAVE");
     // Initialize RS485 Modbus Master
     Serial2.begin(115200, SERIAL_8N1, RX, TX); // Initialize Serial2 for RS485 communication
+    PLG_write_4("slave1", "master", "slave1", "reset");
+    DEBUG_PRINTLN("PLG_board_relay_reset");
+    sen_lora_data_4();
 }
-void sen_lora_data_4()
+void sen_data_cambien()
 {
     // Example of sending sensor data
-    LoRa.beginPacket(); // Start a new packet
-    LoRa.print(messages4);
-    LoRa.endPacket();               // Finish the packet and send it
-    digitalWrite(led_master, HIGH); // Turn off LED for slave status
-    delay(20);                      // Delay to ensure the message is sent
-    digitalWrite(led_master, LOW);  // Turn off LED for slave status
+    struct SensorData {
+    const char* name;
+    float value;
+};
+
+SensorData sensorList[] = {
+    { "temp",     temp },
+    { "hum",      hum },
+    { "lux",      lux },
+    { "ph_nuoc",  ph_nuoc },
+    { "ec_nuoc",  ec_nuoc },
+    { "ph_dat",   ph_dat }
+};
+
+for (const auto& sensor : sensorList) {
+    PLG_write_4("slave1", "master", sensor.name, String(sensor.value, 2));
+    sen_lora_data_4();
+}
+    DEBUG_PRINTF("temp: %.2f   hum: %.2f   lux: %.2f   PH-dat: %.2f\n", temp, hum, lux, ph_dat);
 }
 void thucthilenh()
 {
-    if (address_slave.startsWith("slave1") && namedata.startsWith("bom"))
+    if (address_slave.startsWith("slave1"))
+{
+    // Map tên thiết bị sang tên hiển thị debug
+    struct Device {
+        const char* name;
+        const char* debugName;
+    };
+
+    const Device devices[] = {
+        { BOM,        "bom" },
+        { DAOKHI,     "quat" },
+        { QUATHUT,    "quat hut" },
+        { CATNAG,     "cat nang" },
+        { PHUNSUONG,  "phunsuong" },
+        { BOMCCON,    "bomccon" },
+        { DEN,        "den" }
+    };
+
+    bool commandHandled = false;
+
+    for (const auto& device : devices)
     {
-
-        if (data.startsWith("ok"))
+        if (namedata.startsWith(device.name))
         {
-
-            DEBUG_PRINTLN("bom ON");
-            PLG_write_4("slave1", "PLG_relay", "bom", "ON");
+            if (data.startsWith("ok"))
+            {
+                DEBUG_PRINT("[ON] ", device.debugName);
+                PLG_write_4("slave1", "PLG_relay", device.name, "ON");
+            }
+            else if (data.startsWith("not ok"))
+            {
+                DEBUG_PRINT("[OFF] ", device.debugName);
+                PLG_write_4("slave1", "PLG_relay", device.name, "OFF");
+            }
             SEN_PRINTLN(messages4);
-        }
-        else if (data.startsWith("not ok"))
-        {
-
-            DEBUG_PRINTLN("bom OFF");
-            PLG_write_4("slave1", "PLG_relay", "bom", "OFF");
-            SEN_PRINTLN(messages4);
+            commandHandled = true;
+            break;
         }
     }
-    else if (address_slave.startsWith("slave1") && namedata.startsWith("quat"))
+
+    // Xử lý các lệnh đặc biệt khác không dùng chung mô-típ
+    if (!commandHandled)
     {
-        if (data.startsWith("ok"))
+        if (namedata.startsWith("wifi") && data.startsWith("connected"))
         {
-
-            DEBUG_PRINTLN("quat ON");
-            PLG_write_4("slave1", "PLG_relay", "quat", "ON");
-            SEN_PRINTLN(messages4);
-        }
-        else if (data.startsWith("not ok"))
-        {
-
-            DEBUG_PRINTLN("quat OFF");
-            PLG_write_4("slave1", "PLG_relay", "quat", "OFF");
-            SEN_PRINTLN(messages4);
-        }
-    }
-    else if (address_slave.startsWith("slave1") && namedata.startsWith("fanhut"))
-    {
-        if (data.startsWith("ok"))
-        {
-
-            DEBUG_PRINTLN("quat hut ON");
-            PLG_write_4("slave1", "PLG_relay", "fanhut", "ON");
-            SEN_PRINTLN(messages4);
-        }
-        else if (data.startsWith("not ok"))
-        {
-
-            DEBUG_PRINTLN("quat hut OFF");
-            PLG_write_4("slave1", "PLG_relay", "fanhut", "OFF");
-            SEN_PRINTLN(messages4);
-        }
-    }
-    else if (address_slave.startsWith("slave1") && namedata.startsWith("catnag"))
-    {
-        if (data.startsWith("ok"))
-        {
-
-            DEBUG_PRINTLN("cat nang ON");
-            PLG_write_4("slave1", "PLG_relay", "catnag", "ON");
-            SEN_PRINTLN(messages4);
-        }
-        else if (data.startsWith("not ok"))
-        {
-
-            DEBUG_PRINTLN("cat nang OFF");
-            PLG_write_4("slave1", "PLG_relay", "catnag", "OFF");
-            SEN_PRINTLN(messages4);
-        }
-    }
-    else if (address_slave.startsWith("slave1") && namedata.startsWith("phunsuong"))
-    {
-        if (data.startsWith("ok"))
-        {
-
-            DEBUG_PRINTLN("phunsuong ON");
-            PLG_write_4("slave1", "PLG_relay", "phunsuong", "ON");
-            SEN_PRINTLN(messages4);
-        }
-        else if (data.startsWith("not ok"))
-        {
-
-            DEBUG_PRINTLN("phunsuong OFF");
-            PLG_write_4("slave1", "PLG_relay", "phunsuong", "OFF");
-            SEN_PRINTLN(messages4);
-        }
-    }
-    else if (address_slave.startsWith("slave1") && namedata.startsWith("bomccon"))
-    {
-        if (data.startsWith("ok"))
-        {
-
-            DEBUG_PRINTLN("bomccon ON");
-            PLG_write_4("slave1", "PLG_relay", "bomccon", "ON");
-            SEN_PRINTLN(messages4);
-        }
-        else if (data.startsWith("not ok"))
-        {
-
-            DEBUG_PRINTLN("bomcconOFF");
-            PLG_write_4("slave1", "PLG_relay", "bomccon", "OFF");
-            SEN_PRINTLN(messages4);
-        }
-    }
-    else if (address_slave.startsWith("slave1") && namedata.startsWith("den"))
-    {
-        if (data.startsWith("ok"))
-        {
-
-            DEBUG_PRINTLN("den ON");
-            PLG_write_4("slave1", "PLG_relay", "den", "ON");
-            SEN_PRINTLN(messages4);
-        }
-        else if (data.startsWith("not ok"))
-        {
-
-            DEBUG_PRINTLN("den OFF");
-            PLG_write_4("slave1", "PLG_relay", "den", "OFF");
-            SEN_PRINTLN(messages4);
-        }
-    }
-    else if (address_slave.startsWith("slave1") && namedata.startsWith("wifi"))
-    {
-        if (data.startsWith("connected"))
-        {
-
             PLG_write_4("slave1", "PLG_relay", "requet", "run");
-            SEN_PRINTLN(messages4)
+            SEN_PRINTLN(messages4);
+            commandHandled = true;
         }
-    }
-    else if (address.startsWith("PLG_relay") && address_slave.startsWith("slave1"))
-    {
-        if (namedata.startsWith("bom"))
+        else if (namedata.startsWith("temp"))
         {
-            data=bom;
-            PLG_write_4("slave1", "master", "bom", String(bom));
-            sen_lora_data_4();
+            temp = data.toFloat();
+            // DEBUG_PRINT("Nhiệt độ: ", temp);
+            commandHandled = true;
         }
-        else if (namedata.startsWith("catnag"))
+        else if (namedata.startsWith("hum"))
         {
-            data=catnag;
-            PLG_write_4("slave1", "master", "catnag", String(catnag));
-            sen_lora_data_4();
+            hum = data.toFloat();
+            // DEBUG_PRINT("Độ ẩm: ", hum);
+            commandHandled = true;
         }
-        else if (namedata.startsWith("den"))
+        else if (namedata.startsWith("lux"))
         {
-            data=den;
-            PLG_write_4("slave1", "master", "den", String(den));
-            sen_lora_data_4();
+            lux = data.toFloat();
+            // DEBUG_PRINT("Lux: ", lux);
+            commandHandled = true;
         }
-        else if (namedata.startsWith("funsuong"))
+        else if (namedata.startsWith("ph_dat"))
         {
-            data=funsuong;
-            PLG_write_4("slave1", "master", "funsuong", String(funsuong));
-            sen_lora_data_4();
+            ph_dat = data.toFloat();
+            // DEBUG_PRINT("PH đất: ", ph_dat);
+            commandHandled = true;
         }
-        else if (namedata.startsWith("daokhi"))
+        else if (namedata.startsWith("sensor") && data.startsWith("end"))
         {
-            data=daokhi;
-            PLG_write_4("slave1", "master", "daokhi", String(daokhi));
-            sen_lora_data_4();
+            start_sensor = true;
+            commandHandled = true;
         }
-        else if (namedata.startsWith("quathut"))
-        {
-            data=quathut;
-            PLG_write_4("slave1", "master", "quathut", String(quathut));
-            sen_lora_data_4();
-        }
-        else if (namedata.startsWith("bomcaycon"))
-        {
-            data=bomcaycon;
-            PLG_write_4("slave1", "master", "bomcaycon", String(bomcaycon));
-            sen_lora_data_4();
-        }
-        
-    }
-    else
-    {
-        DEBUG_PRINTLN("Khong co lenh nao duoc thuc hien");
     }
 }
+}
+
 void loop_slave()
 {
     int packetSize = LoRa.parsePacket();
@@ -265,7 +201,6 @@ void loop_slave()
             receivedData += (char)LoRa.read();
         }
         PLG_check_message(); // Check the received data
-        // DEBUG_PRINTF("temp: %.2f   hum: %.2f   lux: %.2f   PH-dat: %.2f\n", temp, hum, lux, ph_dat);
         digitalWrite(led_connected, HIGH);
         delay(20);
         digitalWrite(led_connected, LOW);
@@ -277,44 +212,18 @@ void loop_slave()
         PLG_check_message();                          // Gọi xử lý chuỗi
         thucthilenh();                                // Execute the command
     }
-}
-/*------------------- board cam bien---------------------------------------------*/
 
-void sen_data_cambien()
-{
-    // Example of sending sensor data
-    PLG_write_4("slave2", "slave1", "temp", String(temp, 2));
-    sen_lora_data_4();
-    PLG_write_4("slave2", "slave1", "hum", String(hum, 2));
-    sen_lora_data_4();
-    PLG_write_4("slave2", "slave1", "lux", String(lux, 2));
-    sen_lora_data_4();
-    // PLG_write_4("slave2", "slave1", "ph_nuoc", String(ph_nuoc, 2));
-    // sen_lora_data_4();
-    // PLG_write_4("slave2", "slave1", "ec_nuoc", String(ec_nuoc, 2));
-    // sen_lora_data_4();
-    PLG_write_4("slave2", "slave1", "ph_dat", String(ph_dat, 2));
-    sen_lora_data_4();
-    DEBUG_PRINTF("temp: %.2f   hum: %.2f   lux: %.2f   PH-dat: %.2f\n", temp, hum, lux, ph_dat);
-}
-void loop_cambien()
-{
-    unsigned long currentTime = millis();
-
-    if (currentTime - lastTime >= 2000)
+    if (start_sensor == true) // Check if it's time to send sensor data
     {
-        // Gửi dữ liệu cảm biến mỗi 2 giây
-        temp = hum = lux = ph_dat = temp + 0.5;
         sen_data_cambien();
-        lastTime = currentTime;
+        start_sensor = false; // Reset the flag after sending data
+        PLG_write_4("slave1", "master", "PLG_relay", "update");
+        DEBUG_PRINTLN("PLG_board_relay_update");
+        sen_lora_data_4();
     }
 }
 
 void PLG_slave_loop()
 {
-#if defined(PLG_sensor)
-    loop_cambien();
-#else
     loop_slave();
-#endif
 }

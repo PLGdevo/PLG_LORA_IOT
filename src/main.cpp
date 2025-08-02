@@ -8,11 +8,11 @@
  *
  * This code is part of the PLG Project for the PLG Contest 2025.
  */
-#define DEBUG 
+// #define DEBUG 
 #define ERA_DEBUG
 #define SEN
 // #define ERA_DEBUG
-#define PLG_MASTER
+// #define PLG_MASTER
 
 #include <Arduino.h>
 

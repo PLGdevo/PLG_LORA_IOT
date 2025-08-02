@@ -10,7 +10,7 @@
 #include <PLG_datastring.h>
 #include <EEPROM.h>
 
-// define the pins used by the transceiver module
+// Define hardware pins
 #define ss 05            // Slave Select pin
 #define rst 04           // Reset pin
 #define dio0 14          // DIO0 pin
@@ -22,6 +22,7 @@
 #define TX 17            // TX pin for RS485 module
 #define RX 16            // RX pin for RS485 module
 
+// EEPROM addresses
 #define ADDR_BOM 0
 #define ADDR_CATNAG 1
 #define ADDR_DEN 2
@@ -29,6 +30,13 @@
 #define ADDR_DAOKHI 4
 #define ADDR_QUATHUT 5
 #define ADDR_BOMCCON 6
+#define BOM         "V1"
+#define BOMCCON     "V2"
+#define CATNAG      "V3"
+#define DEN         "V4"
+#define PHUNSUONG   "V5"
+#define DAOKHI      "V6"
+#define QUATHUT     "V7"
 
 unsigned long lastCheck = 0;
 const unsigned long interval = 5000; // 5 giây
@@ -41,23 +49,17 @@ float ec_nuoc = 0.0; // V19
 float ph_dat = 0.0;  // V13
 struct ThietBi
 {
-    int bom=0;
-    int catnag=0;
-    int den=0;
-    int phunsuong=0;
-    int daokhi=0;
-    int quathut=0;
-    int bomcaycon=0;
+    int bom = 0;
+    int catnag = 0;
+    int den = 0;
+    int phunsuong = 0;
+    int daokhi = 0;
+    int quathut = 0;
+    int bomcaycon = 0;
 };
 
 ThietBi tb;
 
-// LoRa.beginPacket(); // Start a new packet
-// LoRa.print(mes);
-// LoRa.endPacket();              // Finish the packet and send it
-// digitalWrite(led_slave, HIGH); // Turn off LED for slave status
-// delay(20);                     // Delay to ensure the message is sent
-// digitalWrite(led_slave, LOW);  // Turn off LED for slave status
 void handleDeviceControl(String deviceName, String status, int ledPin)
 {
     PLG_write_4("master", "slave1", deviceName.c_str(), status.c_str());
@@ -95,43 +97,43 @@ ERA_WRITE(V0) // Bơm
 {
     tb.bom = param.getInt();
     PLG_WRITE_EEPROOM();
-    handleDeviceControl("bom", tb.bom == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl(BOM, tb.bom == HIGH ? "ok" : "not ok", led_slave);
 }
 ERA_WRITE(V1) // Quạt hút
 {
     tb.quathut = param.getInt();
     PLG_WRITE_EEPROOM();
-    handleDeviceControl("fanhut", tb.quathut == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl(QUATHUT, tb.quathut == HIGH ? "ok" : "not ok", led_slave);
 }
 ERA_WRITE(V2) // Cắt nâng
 {
     tb.catnag = param.getInt();
     PLG_WRITE_EEPROOM();
-    handleDeviceControl("catnag", tb.catnag == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl(CATNAG, tb.catnag == HIGH ? "ok" : "not ok", led_slave);
 }
 ERA_WRITE(V5) // Quạt đảo khí
 {
     tb.daokhi = param.getInt();
     PLG_WRITE_EEPROOM();
-    handleDeviceControl("quat", tb.daokhi == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl(DAOKHI, tb.daokhi == HIGH ? "ok" : "not ok", led_slave);
 }
 ERA_WRITE(V6) // Bơm cây con
 {
     tb.bomcaycon = param.getInt();
     PLG_WRITE_EEPROOM();
-    handleDeviceControl("bomccon", tb.bomcaycon == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl(BOMCCON, tb.bomcaycon == HIGH ? "ok" : "not ok", led_slave);
 }
 ERA_WRITE(V7) // Đèn
 {
     tb.den = param.getInt();
     PLG_WRITE_EEPROOM();
-    handleDeviceControl("den", tb.den == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl(DEN, tb.den == HIGH ? "ok" : "not ok", led_slave);
 }
 ERA_WRITE(V8) // Phun sương
 {
     tb.phunsuong = param.getInt();
     PLG_WRITE_EEPROOM();
-    handleDeviceControl("phunsuong", tb.phunsuong == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl(PHUNSUONG, tb.phunsuong == HIGH ? "ok" : "not ok", led_slave);
 }
 ERA_WRITE(V10) // nhiet do
 {
@@ -262,6 +264,13 @@ void Setup_master()
     ERa.virtualWrite(V6, tb.bomcaycon);
     ERa.virtualWrite(V7, tb.den);
     ERa.virtualWrite(V8, tb.phunsuong);
+    handleDeviceControl(BOM, tb.bom == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl(QUATHUT, tb.quathut == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl(CATNAG, tb.catnag == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl(DAOKHI, tb.daokhi == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl(BOMCCON, tb.bomcaycon == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl(DEN, tb.den == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl(PHUNSUONG, tb.phunsuong == HIGH ? "ok" : "not ok", led_slave);
 }
 void PLG_check_mode_connect() // Check the connection mode and update LED status
 {
@@ -281,46 +290,38 @@ void PLG_check_mode_connect() // Check the connection mode and update LED status
         ERa.connected() ? digitalWrite(led_connected, HIGH) : digitalWrite(led_connected, LOW);
     }
 
-    if (millis() - lastCheck >= interval) // Check if 400 milliseconds have passed
-    {
-        if (ERa.connected() == true)
-        {
-            lastCheck = millis();
-            digitalWrite(led_connected, HIGH);
-            PLG_write_4("master", "slave1", "wifi", "connected");
-            DEBUG_PRINTLN(messages4);
-            LoRa.beginPacket();
-            LoRa.print(messages4);
-            LoRa.endPacket();
+    // if (millis() - lastCheck >= interval) // Check if 400 milliseconds have passed
+    // {
+    //     if (ERa.connected() == true)
+    //     {
+    //         lastCheck = millis();
+    //         digitalWrite(led_connected, HIGH);
+    //         PLG_write_4("master", "slave1", "wifi", "connected");
+    //         DEBUG_PRINTLN(messages4);
+    //         LoRa.beginPacket();
+    //         LoRa.print(messages4);
+    //         LoRa.endPacket();
 
-            digitalWrite(led_slave, HIGH);
-            delay(20);
-            digitalWrite(led_slave, LOW);
-            Serial.println("----------- TRẠNG THÁI THIẾT BỊ -----------");
-            Serial.print("Bơm        (tb.bom): ");         Serial.println(tb.bom);
-            Serial.print("Quạt hút   (tb.quathut): ");     Serial.println(tb.quathut);
-            Serial.print("Cắt nâng   (tb.catnag): ");      Serial.println(tb.catnag);
-            Serial.print("Đảo khí    (tb.daokhi): ");      Serial.println(tb.daokhi);
-            Serial.print("Bơm cây con(tb.bomcaycon): ");   Serial.println(tb.bomcaycon);
-            Serial.print("Đèn        (tb.den): ");         Serial.println(tb.den);
-            Serial.print("Phun sương(tb.phunsuong): ");    Serial.println(tb.phunsuong);
-            Serial.println("------------------------------------------");
-        }
-        else
-        {
-            lastCheck = millis();
-            digitalWrite(led_connected, HIGH);
-            PLG_write_4("master", "slave1", "wifi", "disconnected");
-            DEBUG_PRINTLN(messages4);
-            LoRa.beginPacket();
-            LoRa.print(messages4);
-            LoRa.endPacket();
+    //         digitalWrite(led_slave, HIGH);
+    //         delay(20);
+    //         digitalWrite(led_slave, LOW);
 
-            digitalWrite(led_slave, HIGH);
-            delay(20);
-            digitalWrite(led_slave, LOW);
-        }
-    }
+    //     }
+    //     else
+    //     {
+    //         lastCheck = millis();
+    //         digitalWrite(led_connected, HIGH);
+    //         PLG_write_4("master", "slave1", "wifi", "disconnected");
+    //         DEBUG_PRINTLN(messages4);
+    //         LoRa.beginPacket();
+    //         LoRa.print(messages4);
+    //         LoRa.endPacket();
+
+    //         digitalWrite(led_slave, HIGH);
+    //         delay(20);
+    //         digitalWrite(led_slave, LOW);
+    //     }
+    // }
 }
 // Hàm xử lý cảm biến
 void PLG_data_Sensor(String name, String value, int ledPin)
@@ -393,6 +394,30 @@ void PLG_thucthilenh() // Execute the command
     {
         PLG_data_Sensor(namedata, data, led_slave); // Process sensor data
     }
+    if (address.startsWith("slave1") && data.startsWith("reset"))
+    {
+        PLG_READ_EEPROOM();
+        handleDeviceControl(BOM, tb.bom == HIGH ? "ok" : "not ok", led_slave);
+        handleDeviceControl(QUATHUT, tb.quathut == HIGH ? "ok" : "not ok", led_slave);
+        handleDeviceControl(CATNAG, tb.catnag == HIGH ? "ok" : "not ok", led_slave);
+        handleDeviceControl(DAOKHI, tb.daokhi == HIGH ? "ok" : "not ok", led_slave);
+        handleDeviceControl(BOMCCON, tb.bomcaycon == HIGH ? "ok" : "not ok", led_slave);
+        handleDeviceControl(DEN, tb.den == HIGH ? "ok" : "not ok", led_slave);
+        handleDeviceControl(PHUNSUONG, tb.phunsuong == HIGH ? "ok" : "not ok", led_slave);
+    }
+    else if (address.startsWith("slave1") && data.startsWith("update"))
+    {
+        PLG_READ_EEPROOM();
+        handleDeviceControl(BOM, tb.bom == HIGH ? "ok" : "not ok", led_slave);
+        handleDeviceControl(QUATHUT, tb.quathut == HIGH ? "ok" : "not ok", led_slave);
+        handleDeviceControl(CATNAG, tb.catnag == HIGH ? "ok" : "not ok", led_slave);
+        handleDeviceControl(DAOKHI, tb.daokhi == HIGH ? "ok" : "not ok", led_slave);
+        handleDeviceControl(BOMCCON, tb.bomcaycon == HIGH ? "ok" : "not ok", led_slave);
+        handleDeviceControl(DEN, tb.den == HIGH ? "ok" : "not ok", led_slave);
+        handleDeviceControl(PHUNSUONG, tb.phunsuong == HIGH ? "ok" : "not ok", led_slave);
+    }
+
+
 }
 ERA_APP_LOOP()
 {
