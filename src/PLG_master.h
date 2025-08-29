@@ -25,6 +25,7 @@ String ID_control = "0";
 String ID_CB = "1";
 String ID_DD = "2";
 String ID_master = "3";
+String ID_NHA_4 = "5";
 int status_control = 0;
 // EEPROM addresses
 #define ADDR_BOM 0
@@ -34,6 +35,16 @@ int status_control = 0;
 #define ADDR_DAOKHI 4
 #define ADDR_QUATHUT 5
 #define ADDR_BOMCCON 6
+#define ADDR_BONNUOC 7
+
+#define ADDR_BOM_NHA_4 8
+#define ADDR_VAN_1 9
+#define ADDR_VAN_2 10
+#define ADDR_VAN_3 11
+#define ADDR_VAN_4 12
+
+#define ADDR_AUTO 13
+//---------------- nhà số 2
 #define BOM "V1"
 #define BOMCCON "V2"
 #define CATNAG "V3"
@@ -41,6 +52,13 @@ int status_control = 0;
 #define PHUNSUONG "V5"
 #define DAOKHI "V6"
 #define QUATHUT "V7"
+#define BONNUOC "V8"
+#define auto "V13"
+//---------------nhà số 4
+#define BOM_NHA_4 "V9"
+#define VAN_1 "V10"
+#define VAN_2 "V11"
+#define VAN_3 "V12"
 
 unsigned long lastCheck = 0;
 unsigned long lastTime = 0;
@@ -54,6 +72,14 @@ float ec_nuoc = 0.0; // V19
 float ph_dat = 0.0;  // V13
 int level_cool = 0;
 String mode = "";
+struct thietbi_nha4
+{
+    int bom = 0;
+    int van_1 = 0;
+    int van_2 = 0;
+    int van_3 = 0;
+};
+thietbi_nha4 tb_nha4;
 struct ThietBi
 {
     int bom = 0;
@@ -63,11 +89,13 @@ struct ThietBi
     int daokhi = 0;
     int quathut = 0;
     int bomcaycon = 0;
+    int bonnuoc = 0;
+    int autoo = 1;
 };
 
 ThietBi tb;
 
-void handleDeviceControl(String deviceName, String status, int ledPin)
+void handleDeviceControl(String deviceName, String status, int ledPin) // gui data nha so 2
 {
     PLG_write_4(ID_master, ID_control, deviceName.c_str(), status.c_str());
 
@@ -79,124 +107,165 @@ void handleDeviceControl(String deviceName, String status, int ledPin)
     delay(20);
     digitalWrite(ledPin, LOW);
 }
+void handleDeviceControl_s4(String deviceName, String status, int ledPin) // gui data nha so 4
+{
+    PLG_write_4(ID_master, ID_NHA_4, deviceName.c_str(), status.c_str());
+
+    LoRa.beginPacket();
+    LoRa.print(messages4);
+    LoRa.endPacket();
+    DEBUG_PRINTF("[STATUS] %-10s → %s\n", deviceName, status);
+    digitalWrite(ledPin, HIGH);
+    delay(20);
+    digitalWrite(ledPin, LOW);
+}
 void PLG_WRITE_EEPROOM()
 {
-    EEPROM.write(ADDR_BOM, (uint8_t)tb.bom);
-    EEPROM.write(ADDR_CATNAG, (uint8_t)tb.catnag);
-    EEPROM.write(ADDR_DEN, (uint8_t)tb.den);
-    EEPROM.write(ADDR_PHUNSUONG, (uint8_t)tb.phunsuong);
-    EEPROM.write(ADDR_DAOKHI, (uint8_t)tb.daokhi);
-    EEPROM.write(ADDR_QUATHUT, (uint8_t)tb.quathut);
-    EEPROM.write(ADDR_BOMCCON, (uint8_t)tb.bomcaycon);
+    EEPROM.write(ADDR_AUTO,(uint8_t)tb.autoo);
+    // EEPROM.write(ADDR_BOM, (uint8_t)tb.bom);
+    // EEPROM.write(ADDR_CATNAG, (uint8_t)tb.catnag);
+    // EEPROM.write(ADDR_DEN, (uint8_t)tb.den);
+    // EEPROM.write(ADDR_PHUNSUONG, (uint8_t)tb.phunsuong);
+    // EEPROM.write(ADDR_DAOKHI, (uint8_t)tb.daokhi);
+    // EEPROM.write(ADDR_QUATHUT, (uint8_t)tb.quathut);
+    // EEPROM.write(ADDR_BOMCCON, (uint8_t)tb.bomcaycon);
+    // EEPROM.write(ADDR_BONNUOC, (uint8_t)tb.bonnuoc);
+    EEPROM.write(ADDR_BOM_NHA_4, (uint8_t)tb_nha4.bom);
+    EEPROM.write(ADDR_VAN_1, (uint8_t)tb_nha4.van_1);
+    EEPROM.write(ADDR_VAN_2, (uint8_t)tb_nha4.van_2);
+    EEPROM.write(ADDR_VAN_3, (uint8_t)tb_nha4.van_3);
+
     EEPROM.commit();
-    DEBUG_PRINTF("Qhut : %d  catnang : %d  funS : %d  dao khi  : %d", tb.quathut, tb.catnag, tb.daokhi, tb.phunsuong);
 }
 void PLG_READ_EEPROOM()
 {
-    tb.bom = EEPROM.read(ADDR_BOM);
-    tb.catnag = EEPROM.read(ADDR_CATNAG);
-    tb.den = EEPROM.read(ADDR_DEN);
-    tb.phunsuong = EEPROM.read(ADDR_PHUNSUONG);
-    tb.daokhi = EEPROM.read(ADDR_DAOKHI);
-    tb.quathut = EEPROM.read(ADDR_QUATHUT);
-    tb.bomcaycon = EEPROM.read(ADDR_BOMCCON);
+    tb.autoo=EEPROM.read(ADDR_AUTO);
+    // tb.bom = EEPROM.read(ADDR_BOM);
+    // tb.catnag = EEPROM.read(ADDR_CATNAG);
+    // tb.den = EEPROM.read(ADDR_DEN);
+    // tb.phunsuong = EEPROM.read(ADDR_PHUNSUONG);
+    // tb.daokhi = EEPROM.read(ADDR_DAOKHI);
+    // tb.quathut = EEPROM.read(ADDR_QUATHUT);
+    // tb.bomcaycon = EEPROM.read(ADDR_BOMCCON);
+    // tb.bonnuoc = EEPROM.read(ADDR_BONNUOC);
+    tb_nha4.bom = EEPROM.read(ADDR_BOM_NHA_4);
+    tb_nha4.van_1 = EEPROM.read(ADDR_VAN_1);
+    tb_nha4.van_2 = EEPROM.read(ADDR_VAN_2);
+    tb_nha4.van_3 = EEPROM.read(ADDR_VAN_3);
 }
-ERA_WRITE(V0) // Bơm
-{
-    tb.bom = param.getInt();
-    ERa.virtualWrite(V0, tb.bom);
-    PLG_WRITE_EEPROOM();
-    handleDeviceControl(BOM, tb.bom == HIGH ? "ok" : "not ok", led_slave);
-}
-ERA_WRITE(V1) // Quạt hút
-{
-    tb.quathut = param.getInt();
-    ERa.virtualWrite(V1, tb.quathut);
-    PLG_WRITE_EEPROOM();
-    handleDeviceControl(QUATHUT, tb.quathut == HIGH ? "ok" : "not ok", led_slave);
-}
-ERA_WRITE(V2) // Cắt nâng
-{
-    tb.catnag = param.getInt();
-    ERa.virtualWrite(V2, tb.catnag);
-    PLG_WRITE_EEPROOM();
-    handleDeviceControl(CATNAG, tb.catnag == HIGH ? "ok" : "not ok", led_slave);
-}
-ERA_WRITE(V5) // Quạt đảo khí
-{
-    tb.daokhi = param.getInt();
-    ERa.virtualWrite(V5, tb.daokhi);
-    PLG_WRITE_EEPROOM();
-    handleDeviceControl(DAOKHI, tb.daokhi == HIGH ? "ok" : "not ok", led_slave);
-}
-ERA_WRITE(V6) // Bơm cây con
-{
-    tb.bomcaycon = param.getInt();
-    PLG_WRITE_EEPROOM();
-    handleDeviceControl(BOMCCON, tb.bomcaycon == HIGH ? "ok" : "not ok", led_slave);
-}
-ERA_WRITE(V7) // Đèn
-{
-    tb.den = param.getInt();
 
+ERA_WRITE(V3) // auto || manual
+{
+    tb.autoo = param.getInt();
+    ERa.virtualWrite(V3, tb.autoo);
     PLG_WRITE_EEPROOM();
-    handleDeviceControl(DEN, tb.den == HIGH ? "ok" : "not ok", led_slave);
-}
-ERA_WRITE(V8) // Phun sương
+    handleDeviceControl(auto, tb.autoo == HIGH ? "ok" : "not ok", led_slave);
+
+} 
+/*
+ERA_WRITE(V26) // bon nuoc
 {
-    tb.phunsuong = param.getInt();
-    ERa.virtualWrite(V8, tb.phunsuong);
+    tb.bonnuoc = param.getInt();
+    ERa.virtualWrite(V26, tb.bonnuoc);
     PLG_WRITE_EEPROOM();
-    handleDeviceControl(PHUNSUONG, tb.phunsuong == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl(BONNUOC, tb.bonnuoc == HIGH ? "ok" : "not ok", led_slave);
 }
-ERA_WRITE(V10) // nhiet do
+ ERA_WRITE(V0) // Bơm
+ {
+     tb.bom = param.getInt();
+     ERa.virtualWrite(V0, tb.bom);
+     PLG_WRITE_EEPROOM();
+     handleDeviceControl(BOM, tb.bom == HIGH ? "ok" : "not ok", led_slave);
+ }
+ ERA_WRITE(V1) // Quạt hút
+ {
+     tb.quathut = param.getInt();
+     ERa.virtualWrite(V1, tb.quathut);
+     PLG_WRITE_EEPROOM();
+     handleDeviceControl(QUATHUT, tb.quathut == HIGH ? "ok" : "not ok", led_slave);
+ }
+ ERA_WRITE(V2) // Cắt nâng
+ {
+     tb.catnag = param.getInt();
+     ERa.virtualWrite(V2, tb.catnag);
+     PLG_WRITE_EEPROOM();
+     handleDeviceControl(CATNAG, tb.catnag == HIGH ? "ok" : "not ok", led_slave);
+ }
+ ERA_WRITE(V5) // Quạt đảo khí
+ {
+     tb.daokhi = param.getInt();
+     ERa.virtualWrite(V5, tb.daokhi);
+     PLG_WRITE_EEPROOM();
+     handleDeviceControl(DAOKHI, tb.daokhi == HIGH ? "ok" : "not ok", led_slave);
+ }
+ ERA_WRITE(V6) // Bơm cây con
+ {
+     tb.bomcaycon = param.getInt();
+     PLG_WRITE_EEPROOM();
+     handleDeviceControl(BOMCCON, tb.bomcaycon == HIGH ? "ok" : "not ok", led_slave);
+ }
+ ERA_WRITE(V7) // Đèn
+ {
+     tb.den = param.getInt();
+
+     PLG_WRITE_EEPROOM();
+     handleDeviceControl(DEN, tb.den == HIGH ? "ok" : "not ok", led_slave);
+ }
+ ERA_WRITE(V8) // Phun sương
+ {
+     tb.phunsuong = param.getInt();
+     ERa.virtualWrite(V8, tb.phunsuong);
+     PLG_WRITE_EEPROOM();
+     handleDeviceControl(PHUNSUONG, tb.phunsuong == HIGH ? "ok" : "not ok", led_slave);
+ }
+ ERA_WRITE(V10) // nhiet do
+ {
+     ERa.virtualWrite(V10, temp);
+ }
+ ERA_WRITE(V11) // do am
+ {
+     ERa.virtualWrite(V11, hum); // Assuming 'hum' is a float variable for humidity
+ }
+ ERA_WRITE(V12) // lux
+ {
+     ERa.virtualWrite(V12, lux);
+ }
+ ERA_WRITE(V13) // PH dat
+ {
+     ERa.virtualWrite(V13, ph_dat);
+ }
+ */
+//------------nha so 4
+ERA_WRITE(V14) // bom nha 4
 {
-    ERa.virtualWrite(V10, temp);
+    tb_nha4.bom = param.getInt();
+    ERa.virtualWrite(V14, tb_nha4.bom);
+    PLG_WRITE_EEPROOM();
+    handleDeviceControl_s4(BOM_NHA_4, tb_nha4.bom == HIGH ? "ok" : "not ok", led_slave);
 }
-ERA_WRITE(V11) // do am
+ERA_WRITE(V15) // van 1
 {
-    ERa.virtualWrite(V11, hum); // Assuming 'hum' is a float variable for humidity
+    tb_nha4.van_1 = param.getInt();
+    ERa.virtualWrite(V15, tb_nha4.van_1);
+    PLG_WRITE_EEPROOM();
+    handleDeviceControl_s4(VAN_1, tb_nha4.van_1 == HIGH ? "ok" : "not ok", led_slave);
 }
-ERA_WRITE(V12) // lux
+ERA_WRITE(V16) // van 2
 {
-    ERa.virtualWrite(V12, lux);
+    tb_nha4.van_2 = param.getInt();
+    ERa.virtualWrite(V16, tb_nha4.van_2);
+    PLG_WRITE_EEPROOM();
+    handleDeviceControl_s4(VAN_2, tb_nha4.van_2 == HIGH ? "ok" : "not ok", led_slave);
 }
-ERA_WRITE(V13) // PH dat
+ERA_WRITE(V17) // van 3
 {
-    ERa.virtualWrite(V13, ph_dat);
+    tb_nha4.van_3 = param.getInt();
+    ERa.virtualWrite(V17, tb_nha4.van_3);
+    PLG_WRITE_EEPROOM();
+    handleDeviceControl_s4(VAN_3, tb_nha4.van_3 == HIGH ? "ok" : "not ok", led_slave);
 }
-ERA_WRITE(V3) // su dung dinh duong 1
-{
-    value = param.getInt();
-}
-ERA_WRITE(V4) // su dung dinh duong 2
-{
-    value = param.getInt();
-}
-ERA_WRITE(V14) // dinh duong 3
-{
-    value = param.getInt();
-}
-ERA_WRITE(V15) // dinh duong 4
-{
-    value = param.getInt();
-}
-ERA_WRITE(V16) // bom_1
-{
-    value = param.getInt();
-}
-ERA_WRITE(V17) // bom_2
-{
-    value = param.getInt();
-}
-ERA_WRITE(V9) // bom_3
-{
-    value = param.getInt();
-}
-ERA_WRITE(V18) // bom_4
-{
-    value = param.getInt();
-}
+//-------------------------------
+
 ERA_WRITE(V19) // Do dan dien EC
 {
     ERa.virtualWrite(V19, ec_nuoc); // Assuming 'ec_nuoc' is a float variable for EC
@@ -251,7 +320,7 @@ void Setup_master()
     // 433E6 for Asia
     // 868E6 for Europe
     // 915E6 for North America
-    // LoRa.begin(433E6); // Initialize LoRa with the specified frequency
+    LoRa.begin(433E6); // Initialize LoRa with the specified frequency
     while (!LoRa.begin(433E6))
     {
         DEBUG_PRINT(".");
@@ -271,20 +340,33 @@ void Setup_master()
     // ERa.addInterval(1000L, timerEvent);
     DEBUG_PRINT("-----------------PLG_start----------\n\r");
     PLG_READ_EEPROOM();
-    ERa.virtualWrite(V0, tb.bom);
-    ERa.virtualWrite(V1, tb.quathut);
-    ERa.virtualWrite(V2, tb.catnag);
-    ERa.virtualWrite(V5, tb.daokhi);
-    ERa.virtualWrite(V6, tb.bomcaycon);
-    ERa.virtualWrite(V7, tb.den);
-    ERa.virtualWrite(V8, tb.phunsuong);
-    handleDeviceControl(BOM, tb.bom == HIGH ? "ok" : "not ok", led_slave);
-    handleDeviceControl(QUATHUT, tb.quathut == HIGH ? "ok" : "not ok", led_slave);
-    handleDeviceControl(CATNAG, tb.catnag == HIGH ? "ok" : "not ok", led_slave);
-    handleDeviceControl(DAOKHI, tb.daokhi == HIGH ? "ok" : "not ok", led_slave);
-    handleDeviceControl(BOMCCON, tb.bomcaycon == HIGH ? "ok" : "not ok", led_slave);
-    handleDeviceControl(DEN, tb.den == HIGH ? "ok" : "not ok", led_slave);
-    handleDeviceControl(PHUNSUONG, tb.phunsuong == HIGH ? "ok" : "not ok", led_slave);
+    // ERa.virtualWrite(V0, tb.bom);
+    // ERa.virtualWrite(V1, tb.quathut);
+    // ERa.virtualWrite(V2, tb.catnag);
+    // ERa.virtualWrite(V5, tb.daokhi);
+    // ERa.virtualWrite(V6, tb.bomcaycon);
+    // ERa.virtualWrite(V7, tb.den);
+    // ERa.virtualWrite(V8, tb.phunsuong);
+    // ERa.virtualWrite(V26, tb.bonnuoc);
+    ERa.virtualWrite(V14, tb_nha4.bom);
+    ERa.virtualWrite(V15, tb_nha4.van_1);
+    ERa.virtualWrite(V16, tb_nha4.van_2);
+    ERa.virtualWrite(V17, tb_nha4.van_3);
+    ERa.virtualWrite(V3, tb.autoo);
+    // handleDeviceControl(BOM, tb.bom == HIGH ? "ok" : "not ok", led_slave); /// can sua lai
+    // handleDeviceControl(BONNUOC, tb.bonnuoc == HIGH ? "ok" : "not ok", led_slave);
+    // handleDeviceControl(QUATHUT, tb.quathut == HIGH ? "ok" : "not ok", led_slave);
+    // handleDeviceControl(CATNAG, tb.catnag == HIGH ? "ok" : "not ok", led_slave);
+    // handleDeviceControl(DAOKHI, tb.daokhi == HIGH ? "ok" : "not ok", led_slave);
+    // handleDeviceControl(BOMCCON, tb.bomcaycon == HIGH ? "ok" : "not ok", led_slave);
+    // handleDeviceControl(DEN, tb.den == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl(auto, tb.autoo == HIGH ? "ok" : "not ok", led_slave);
+    //----------------nha so 4
+    // handleDeviceControl(PHUNSUONG, tb.phunsuong == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl_s4(BOM_NHA_4, tb_nha4.bom == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl_s4(VAN_1, tb_nha4.van_1 == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl_s4(VAN_2, tb_nha4.van_2 == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl_s4(VAN_3, tb_nha4.van_3 == HIGH ? "ok" : "not ok", led_slave);
 }
 void PLG_check_mode_connect() // Check the connection mode and update LED status
 {
@@ -303,39 +385,6 @@ void PLG_check_mode_connect() // Check the connection mode and update LED status
     {
         ERa.connected() ? digitalWrite(led_connected, HIGH) : digitalWrite(led_connected, LOW);
     }
-
-    // if (millis() - lastCheck >= interval) // Check if 400 milliseconds have passed
-    // {
-    //     if (ERa.connected() == true)
-    //     {
-    //         lastCheck = millis();
-    //         digitalWrite(led_connected, HIGH);
-    //         PLG_write_4("master", "slave1", "wifi", "connected");
-    //         DEBUG_PRINTLN(messages4);
-    //         LoRa.beginPacket();
-    //         LoRa.print(messages4);
-    //         LoRa.endPacket();
-
-    //         digitalWrite(led_slave, HIGH);
-    //         delay(20);
-    //         digitalWrite(led_slave, LOW);
-
-    //     }
-    //     else
-    //     {
-    //         lastCheck = millis();
-    //         digitalWrite(led_connected, HIGH);
-    //         PLG_write_4("master", "slave1", "wifi", "disconnected");
-    //         DEBUG_PRINTLN(messages4);
-    //         LoRa.beginPacket();
-    //         LoRa.print(messages4);
-    //         LoRa.endPacket();
-
-    //         digitalWrite(led_slave, HIGH);
-    //         delay(20);
-    //         digitalWrite(led_slave, LOW);
-    //     }
-    // }
 }
 // Hàm xử lý cảm biến
 void PLG_data_Sensor()
@@ -352,7 +401,31 @@ void PLG_data_Sensor()
         ERa.virtualWrite(V13, ph_dat);
         // DEBUG_PRINTF("temp: %.2f   hum: %.2f   lux: %.2f   PH-dat: %.2f\n", temp, hum, lux, ph_dat);
     }
-    else if (namedata.startsWith("ec_nuoc"))
+    else
+    {
+        DEBUG_PRINT("Tên dữ liệu không hợp lệ: ");
+    }
+
+    PLG_READ_EEPROOM();
+    // handleDeviceControl("PLG", "test", led_slave);
+    // handleDeviceControl(BONNUOC, tb.bonnuoc == HIGH ? "ok" : "not ok", led_slave);
+    // handleDeviceControl(BOM, tb.bom == HIGH ? "ok" : "not ok", led_slave);
+    // handleDeviceControl(QUATHUT, tb.quathut == HIGH ? "ok" : "not ok", led_slave);
+    // handleDeviceControl(CATNAG, tb.catnag == HIGH ? "ok" : "not ok", led_slave);
+    // handleDeviceControl(DAOKHI, tb.daokhi == HIGH ? "ok" : "not ok", led_slave);
+    // handleDeviceControl(BOMCCON, tb.bomcaycon == HIGH ? "ok" : "not ok", led_slave);
+    // handleDeviceControl(DEN, tb.den == HIGH ? "ok" : "not ok", led_slave);
+    // handleDeviceControl(PHUNSUONG, tb.phunsuong == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl(auto, tb.autoo == HIGH ? "ok" : "not ok", led_slave);
+
+    handleDeviceControl_s4(BOM_NHA_4, tb_nha4.bom == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl_s4(VAN_1, tb_nha4.van_1 == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl_s4(VAN_2, tb_nha4.van_2 == HIGH ? "ok" : "not ok", led_slave);
+    handleDeviceControl_s4(VAN_3, tb_nha4.van_3 == HIGH ? "ok" : "not ok", led_slave);
+}
+void PLG_data_DD()
+{
+    if (namedata.startsWith("ec_nuoc"))
     {
         ec_nuoc = data1.toFloat();
         ERa.virtualWrite(V19, ec_nuoc);
@@ -366,36 +439,6 @@ void PLG_data_Sensor()
         // DEBUG_PRINT("pH nước: ");
         // DEBUG_PRINTLN(ph_nuoc);
     }
-    else
-    {
-        // DEBUG_PRINT("Tên dữ liệu không hợp lệ: ");
-    }
-    if (status_control == 1)
-    {
-
-        PLG_READ_EEPROOM();
-        handleDeviceControl("PLG", "test", led_slave);
-        handleDeviceControl(BOM, tb.bom == HIGH ? "ok" : "not ok", led_slave);
-        // handleDeviceControl(QUATHUT, tb.quathut == HIGH ? "ok" : "not ok", led_slave);
-        // handleDeviceControl(CATNAG, tb.catnag == HIGH ? "ok" : "not ok", led_slave);
-        // handleDeviceControl(DAOKHI, tb.daokhi == HIGH ? "ok" : "not ok", led_slave);
-        handleDeviceControl(BOMCCON, tb.bomcaycon == HIGH ? "ok" : "not ok", led_slave);
-        handleDeviceControl(DEN, tb.den == HIGH ? "ok" : "not ok", led_slave);
-        // handleDeviceControl(PHUNSUONG, tb.phunsuong == HIGH ? "ok" : "not ok", led_slave);
-    }
-    else if (status_control == 0)
-    {
-        PLG_READ_EEPROOM();
-        handleDeviceControl("PLG", "test", led_slave);
-        handleDeviceControl(BOM, tb.bom == HIGH ? "ok" : "not ok", led_slave);
-        handleDeviceControl(QUATHUT, tb.quathut == HIGH ? "ok" : "not ok", led_slave);
-        handleDeviceControl(CATNAG, tb.catnag == HIGH ? "ok" : "not ok", led_slave);
-        handleDeviceControl(DAOKHI, tb.daokhi == HIGH ? "ok" : "not ok", led_slave);
-        handleDeviceControl(BOMCCON, tb.bomcaycon == HIGH ? "ok" : "not ok", led_slave);
-        handleDeviceControl(DEN, tb.den == HIGH ? "ok" : "not ok", led_slave);
-        handleDeviceControl(PHUNSUONG, tb.phunsuong == HIGH ? "ok" : "not ok", led_slave);
-    }
-    DEBUG_PRINTLN("--------------------------------------end");
 }
 void PLG_level()
 {
@@ -511,51 +554,30 @@ void PLG_thucthilenh() // Execute the command
     }
     if (address_slave.startsWith(ID_master) && address.startsWith(ID_DD))
     {
-        PLG_data_Sensor(); // Process sensor data
+        PLG_data_DD(); // Process sensor data
     }
-    // if (address.startsWith(ID_CB) &&  data.startsWith("end"))
-    // {
-    // }
+
     if (address.startsWith(ID_control) && data.startsWith("reset"))
     {
         PLG_READ_EEPROOM();
-        handleDeviceControl("PLG", "test", led_slave);
-        handleDeviceControl(BOM, tb.bom == HIGH ? "ok" : "not ok", led_slave);
-        handleDeviceControl(QUATHUT, tb.quathut == HIGH ? "ok" : "not ok", led_slave);
-        handleDeviceControl(CATNAG, tb.catnag == HIGH ? "ok" : "not ok", led_slave);
-        handleDeviceControl(DAOKHI, tb.daokhi == HIGH ? "ok" : "not ok", led_slave);
-        handleDeviceControl(BOMCCON, tb.bomcaycon == HIGH ? "ok" : "not ok", led_slave);
-        handleDeviceControl(DEN, tb.den == HIGH ? "ok" : "not ok", led_slave);
-        handleDeviceControl(PHUNSUONG, tb.phunsuong == HIGH ? "ok" : "not ok", led_slave);
+        handleDeviceControl(auto, tb.autoo == HIGH ? "ok" : "not ok", led_slave);
+        // handleDeviceControl(BONNUOC, tb.bonnuoc == HIGH ? "ok" : "not ok", led_slave);
+        // handleDeviceControl(BOM, tb.bom == HIGH ? "ok" : "not ok", led_slave);
+        // handleDeviceControl(QUATHUT, tb.quathut == HIGH ? "ok" : "not ok", led_slave);
+        // handleDeviceControl(CATNAG, tb.catnag == HIGH ? "ok" : "not ok", led_slave);
+        // handleDeviceControl(DAOKHI, tb.daokhi == HIGH ? "ok" : "not ok", led_slave);
+        // handleDeviceControl(BOMCCON, tb.bomcaycon == HIGH ? "ok" : "not ok", led_slave);
+        // handleDeviceControl(DEN, tb.den == HIGH ? "ok" : "not ok", led_slave);
+        // handleDeviceControl(PHUNSUONG, tb.phunsuong == HIGH ? "ok" : "not ok", led_slave);
     }
-
-    if (address_slave.startsWith(ID_master))
+    if (address.startsWith(ID_NHA_4) && data.startsWith("reset"))
     {
-        if (namedata.startsWith(ID_control))
-        {
-            if (data.startsWith("manual"))
-            {
-                status_control = 0;
-                // DEBUG_PRINTLN(status_cotrol);
-            }
-            else if (data.startsWith("auto"))
-            {
-                status_control = 1;
-                // DEBUG_PRINTLN(status_cotrol);
-            }
-        }
-        if (namedata.startsWith("level"))
-        {
-            level_cool = data.toInt();
-            DEBUG_PRINTF("---------------ok_LEVEL:");
-            DEBUG_PRINT(level_cool);
-            DEBUG_PRINTLN("----------------");
-        }
+        PLG_READ_EEPROOM();
+        handleDeviceControl_s4(BOM_NHA_4, tb_nha4.bom == HIGH ? "ok" : "not ok", led_slave);
+        handleDeviceControl_s4(VAN_1, tb_nha4.van_1 == HIGH ? "ok" : "not ok", led_slave);
+        handleDeviceControl_s4(VAN_2, tb_nha4.van_2 == HIGH ? "ok" : "not ok", led_slave);
+        handleDeviceControl_s4(VAN_3, tb_nha4.van_3 == HIGH ? "ok" : "not ok", led_slave);
     }
-    // if (namedata.startsWith("level"))
-    // {
-    //     level_cool = data.toInt();
-    // }
 }
 ERA_APP_LOOP()
 {
@@ -576,14 +598,7 @@ ERA_APP_LOOP()
         digitalWrite(led_slave, HIGH);
         delay(10);
         digitalWrite(led_slave, LOW);
-    }
-    unsigned long currentTime = millis();
-    if (currentTime - lastTime >= 1500)
-    {
-
-        PLG_level();
-        lastTime = currentTime;
-    }
+    }    
 }
 void PLG_master_loop()
 {
