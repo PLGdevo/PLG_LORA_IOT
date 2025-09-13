@@ -119,17 +119,37 @@ void handleDeviceControl_s4(String deviceName, String status, int ledPin) // gui
     delay(20);
     digitalWrite(ledPin, LOW);
 }
+void handleDevicecontrol_S11(int ledPin)
+{
+    LoRa.beginPacket();
+    LoRa.print(messages11);
+    LoRa.endPacket();
+    DEBUG_PRINTLN(messages11);
+    digitalWrite(ledPin, HIGH);
+    delay(20);
+    digitalWrite(ledPin, LOW);
+}
+void handleDeviceControl_s7(int ledPin) // gui data nha so 4
+{
+
+    LoRa.beginPacket();
+    LoRa.print(messages_7);
+    LoRa.endPacket();
+    digitalWrite(ledPin, HIGH);
+    delay(20);
+    digitalWrite(ledPin, LOW);
+}
 void PLG_WRITE_EEPROOM()
 {
-    EEPROM.write(ADDR_AUTO,(uint8_t)tb.autoo);
-    // EEPROM.write(ADDR_BOM, (uint8_t)tb.bom);
-    // EEPROM.write(ADDR_CATNAG, (uint8_t)tb.catnag);
-    // EEPROM.write(ADDR_DEN, (uint8_t)tb.den);
-    // EEPROM.write(ADDR_PHUNSUONG, (uint8_t)tb.phunsuong);
-    // EEPROM.write(ADDR_DAOKHI, (uint8_t)tb.daokhi);
-    // EEPROM.write(ADDR_QUATHUT, (uint8_t)tb.quathut);
-    // EEPROM.write(ADDR_BOMCCON, (uint8_t)tb.bomcaycon);
-    // EEPROM.write(ADDR_BONNUOC, (uint8_t)tb.bonnuoc);
+    EEPROM.write(ADDR_AUTO, (uint8_t)tb.autoo);
+    EEPROM.write(ADDR_BOM, (uint8_t)tb.bom);
+    EEPROM.write(ADDR_CATNAG, (uint8_t)tb.catnag);
+    EEPROM.write(ADDR_DEN, (uint8_t)tb.den);
+    EEPROM.write(ADDR_PHUNSUONG, (uint8_t)tb.phunsuong);
+    EEPROM.write(ADDR_DAOKHI, (uint8_t)tb.daokhi);
+    EEPROM.write(ADDR_QUATHUT, (uint8_t)tb.quathut);
+    EEPROM.write(ADDR_BOMCCON, (uint8_t)tb.bomcaycon);
+    EEPROM.write(ADDR_BONNUOC, (uint8_t)tb.bonnuoc);
     EEPROM.write(ADDR_BOM_NHA_4, (uint8_t)tb_nha4.bom);
     EEPROM.write(ADDR_VAN_1, (uint8_t)tb_nha4.van_1);
     EEPROM.write(ADDR_VAN_2, (uint8_t)tb_nha4.van_2);
@@ -139,15 +159,15 @@ void PLG_WRITE_EEPROOM()
 }
 void PLG_READ_EEPROOM()
 {
-    tb.autoo=EEPROM.read(ADDR_AUTO);
-    // tb.bom = EEPROM.read(ADDR_BOM);
-    // tb.catnag = EEPROM.read(ADDR_CATNAG);
-    // tb.den = EEPROM.read(ADDR_DEN);
-    // tb.phunsuong = EEPROM.read(ADDR_PHUNSUONG);
-    // tb.daokhi = EEPROM.read(ADDR_DAOKHI);
-    // tb.quathut = EEPROM.read(ADDR_QUATHUT);
-    // tb.bomcaycon = EEPROM.read(ADDR_BOMCCON);
-    // tb.bonnuoc = EEPROM.read(ADDR_BONNUOC);
+    tb.autoo = EEPROM.read(ADDR_AUTO);
+    tb.bom = EEPROM.read(ADDR_BOM);
+    tb.catnag = EEPROM.read(ADDR_CATNAG);
+    tb.den = EEPROM.read(ADDR_DEN);
+    tb.phunsuong = EEPROM.read(ADDR_PHUNSUONG);
+    tb.daokhi = EEPROM.read(ADDR_DAOKHI);
+    tb.quathut = EEPROM.read(ADDR_QUATHUT);
+    tb.bomcaycon = EEPROM.read(ADDR_BOMCCON);
+    tb.bonnuoc = EEPROM.read(ADDR_BONNUOC);
     tb_nha4.bom = EEPROM.read(ADDR_BOM_NHA_4);
     tb_nha4.van_1 = EEPROM.read(ADDR_VAN_1);
     tb_nha4.van_2 = EEPROM.read(ADDR_VAN_2);
@@ -159,110 +179,121 @@ ERA_WRITE(V3) // auto || manual
     tb.autoo = param.getInt();
     ERa.virtualWrite(V3, tb.autoo);
     PLG_WRITE_EEPROOM();
-    handleDeviceControl(auto, tb.autoo == HIGH ? "ok" : "not ok", led_slave);
-
-} 
-/*
+    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
+    handleDevicecontrol_S11(led_slave);
+}
+ERA_WRITE(V0) // Bơm
+{
+    tb.bom = param.getInt();
+    ERa.virtualWrite(V0, tb.bom);
+    PLG_WRITE_EEPROOM();
+    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
+    handleDevicecontrol_S11(led_slave);
+}
 ERA_WRITE(V26) // bon nuoc
 {
     tb.bonnuoc = param.getInt();
     ERa.virtualWrite(V26, tb.bonnuoc);
     PLG_WRITE_EEPROOM();
-    handleDeviceControl(BONNUOC, tb.bonnuoc == HIGH ? "ok" : "not ok", led_slave);
+    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
+    handleDevicecontrol_S11(led_slave);
 }
- ERA_WRITE(V0) // Bơm
- {
-     tb.bom = param.getInt();
-     ERa.virtualWrite(V0, tb.bom);
-     PLG_WRITE_EEPROOM();
-     handleDeviceControl(BOM, tb.bom == HIGH ? "ok" : "not ok", led_slave);
- }
- ERA_WRITE(V1) // Quạt hút
- {
-     tb.quathut = param.getInt();
-     ERa.virtualWrite(V1, tb.quathut);
-     PLG_WRITE_EEPROOM();
-     handleDeviceControl(QUATHUT, tb.quathut == HIGH ? "ok" : "not ok", led_slave);
- }
- ERA_WRITE(V2) // Cắt nâng
- {
-     tb.catnag = param.getInt();
-     ERa.virtualWrite(V2, tb.catnag);
-     PLG_WRITE_EEPROOM();
-     handleDeviceControl(CATNAG, tb.catnag == HIGH ? "ok" : "not ok", led_slave);
- }
- ERA_WRITE(V5) // Quạt đảo khí
- {
-     tb.daokhi = param.getInt();
-     ERa.virtualWrite(V5, tb.daokhi);
-     PLG_WRITE_EEPROOM();
-     handleDeviceControl(DAOKHI, tb.daokhi == HIGH ? "ok" : "not ok", led_slave);
- }
- ERA_WRITE(V6) // Bơm cây con
- {
-     tb.bomcaycon = param.getInt();
-     PLG_WRITE_EEPROOM();
-     handleDeviceControl(BOMCCON, tb.bomcaycon == HIGH ? "ok" : "not ok", led_slave);
- }
- ERA_WRITE(V7) // Đèn
- {
-     tb.den = param.getInt();
+ERA_WRITE(V1) // Quạt hút
+{
+    tb.quathut = param.getInt();
+    ERa.virtualWrite(V1, tb.quathut);
+    PLG_WRITE_EEPROOM();
+    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
+    handleDevicecontrol_S11(led_slave);
+}
+ERA_WRITE(V2) // Cắt nâng
+{
+    tb.catnag = param.getInt();
+    ERa.virtualWrite(V2, tb.catnag);
+    PLG_WRITE_EEPROOM();
+    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
+    handleDevicecontrol_S11(led_slave);
+}
+ERA_WRITE(V5) // Quạt đảo khí
+{
+    tb.daokhi = param.getInt();
+    ERa.virtualWrite(V5, tb.daokhi);
+    PLG_WRITE_EEPROOM();
+    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
+    handleDevicecontrol_S11(led_slave);
+}
+ERA_WRITE(V6) // Bơm cây con
+{
+    tb.bomcaycon = param.getInt();
+    PLG_WRITE_EEPROOM();
+    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
+    handleDevicecontrol_S11(led_slave);
+}
+ERA_WRITE(V7) // Đèn
+{
+    tb.den = param.getInt();
 
-     PLG_WRITE_EEPROOM();
-     handleDeviceControl(DEN, tb.den == HIGH ? "ok" : "not ok", led_slave);
- }
- ERA_WRITE(V8) // Phun sương
- {
-     tb.phunsuong = param.getInt();
-     ERa.virtualWrite(V8, tb.phunsuong);
-     PLG_WRITE_EEPROOM();
-     handleDeviceControl(PHUNSUONG, tb.phunsuong == HIGH ? "ok" : "not ok", led_slave);
- }
- ERA_WRITE(V10) // nhiet do
- {
-     ERa.virtualWrite(V10, temp);
- }
- ERA_WRITE(V11) // do am
- {
-     ERa.virtualWrite(V11, hum); // Assuming 'hum' is a float variable for humidity
- }
- ERA_WRITE(V12) // lux
- {
-     ERa.virtualWrite(V12, lux);
- }
- ERA_WRITE(V13) // PH dat
- {
-     ERa.virtualWrite(V13, ph_dat);
- }
- */
+    PLG_WRITE_EEPROOM();
+    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
+    handleDevicecontrol_S11(led_slave);
+}
+ERA_WRITE(V8) // Phun sương
+{
+    tb.phunsuong = param.getInt();
+    ERa.virtualWrite(V8, tb.phunsuong);
+    PLG_WRITE_EEPROOM();
+    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
+    handleDevicecontrol_S11(led_slave);
+}
+ERA_WRITE(V10) // nhiet do
+{
+    ERa.virtualWrite(V10, temp);
+}
+ERA_WRITE(V11) // do am
+{
+    ERa.virtualWrite(V11, hum); // Assuming 'hum' is a float variable for humidity
+}
+ERA_WRITE(V12) // lux
+{
+    ERa.virtualWrite(V12, lux);
+}
+ERA_WRITE(V13) // PH dat
+{
+    ERa.virtualWrite(V13, ph_dat);
+}
+
 //------------nha so 4
 ERA_WRITE(V14) // bom nha 4
 {
     tb_nha4.bom = param.getInt();
     ERa.virtualWrite(V14, tb_nha4.bom);
     PLG_WRITE_EEPROOM();
-    handleDeviceControl_s4(BOM_NHA_4, tb_nha4.bom == HIGH ? "ok" : "not ok", led_slave);
+    PLG_write_7(ID_master, ID_NHA_4, "4", tb_nha4.bom ? "1" : "0", tb_nha4.van_1 ? "1" : "0", tb_nha4.van_2 ? "1" : "0", tb_nha4.van_3 ? "1" : "0");
+    handleDeviceControl_s7(led_slave);
 }
 ERA_WRITE(V15) // van 1
 {
     tb_nha4.van_1 = param.getInt();
     ERa.virtualWrite(V15, tb_nha4.van_1);
     PLG_WRITE_EEPROOM();
-    handleDeviceControl_s4(VAN_1, tb_nha4.van_1 == HIGH ? "ok" : "not ok", led_slave);
+    PLG_write_7(ID_master, ID_NHA_4, "4", tb_nha4.bom ? "1" : "0", tb_nha4.van_1 ? "1" : "0", tb_nha4.van_2 ? "1" : "0", tb_nha4.van_3 ? "1" : "0");
+    handleDeviceControl_s7(led_slave);
 }
 ERA_WRITE(V16) // van 2
 {
     tb_nha4.van_2 = param.getInt();
     ERa.virtualWrite(V16, tb_nha4.van_2);
     PLG_WRITE_EEPROOM();
-    handleDeviceControl_s4(VAN_2, tb_nha4.van_2 == HIGH ? "ok" : "not ok", led_slave);
+    PLG_write_7(ID_master, ID_NHA_4, "4", tb_nha4.bom ? "1" : "0", tb_nha4.van_1 ? "1" : "0", tb_nha4.van_2 ? "1" : "0", tb_nha4.van_3 ? "1" : "0");
+    handleDeviceControl_s7(led_slave);
 }
 ERA_WRITE(V17) // van 3
 {
     tb_nha4.van_3 = param.getInt();
     ERa.virtualWrite(V17, tb_nha4.van_3);
     PLG_WRITE_EEPROOM();
-    handleDeviceControl_s4(VAN_3, tb_nha4.van_3 == HIGH ? "ok" : "not ok", led_slave);
+    PLG_write_7(ID_master, ID_NHA_4, "4", tb_nha4.bom ? "1" : "0", tb_nha4.van_1 ? "1" : "0", tb_nha4.van_2 ? "1" : "0", tb_nha4.van_3 ? "1" : "0");
+    handleDeviceControl_s7(led_slave);
 }
 //-------------------------------
 
@@ -340,33 +371,26 @@ void Setup_master()
     // ERa.addInterval(1000L, timerEvent);
     DEBUG_PRINT("-----------------PLG_start----------\n\r");
     PLG_READ_EEPROOM();
-    // ERa.virtualWrite(V0, tb.bom);
-    // ERa.virtualWrite(V1, tb.quathut);
-    // ERa.virtualWrite(V2, tb.catnag);
-    // ERa.virtualWrite(V5, tb.daokhi);
-    // ERa.virtualWrite(V6, tb.bomcaycon);
-    // ERa.virtualWrite(V7, tb.den);
-    // ERa.virtualWrite(V8, tb.phunsuong);
-    // ERa.virtualWrite(V26, tb.bonnuoc);
+    ERa.virtualWrite(V0, tb.bom);
+    ERa.virtualWrite(V1, tb.quathut);
+    ERa.virtualWrite(V2, tb.catnag);
+    ERa.virtualWrite(V5, tb.daokhi);
+    ERa.virtualWrite(V6, tb.bomcaycon);
+    ERa.virtualWrite(V7, tb.den);
+    ERa.virtualWrite(V8, tb.phunsuong);
+    ERa.virtualWrite(V26, tb.bonnuoc);
     ERa.virtualWrite(V14, tb_nha4.bom);
     ERa.virtualWrite(V15, tb_nha4.van_1);
     ERa.virtualWrite(V16, tb_nha4.van_2);
     ERa.virtualWrite(V17, tb_nha4.van_3);
     ERa.virtualWrite(V3, tb.autoo);
-    // handleDeviceControl(BOM, tb.bom == HIGH ? "ok" : "not ok", led_slave); /// can sua lai
-    // handleDeviceControl(BONNUOC, tb.bonnuoc == HIGH ? "ok" : "not ok", led_slave);
-    // handleDeviceControl(QUATHUT, tb.quathut == HIGH ? "ok" : "not ok", led_slave);
-    // handleDeviceControl(CATNAG, tb.catnag == HIGH ? "ok" : "not ok", led_slave);
-    // handleDeviceControl(DAOKHI, tb.daokhi == HIGH ? "ok" : "not ok", led_slave);
-    // handleDeviceControl(BOMCCON, tb.bomcaycon == HIGH ? "ok" : "not ok", led_slave);
-    // handleDeviceControl(DEN, tb.den == HIGH ? "ok" : "not ok", led_slave);
-    handleDeviceControl(auto, tb.autoo == HIGH ? "ok" : "not ok", led_slave);
+    // hut ,dao, cat,phun,bom,bomcc,den,auto
+    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
+    handleDevicecontrol_S11(led_slave);
     //----------------nha so 4
-    // handleDeviceControl(PHUNSUONG, tb.phunsuong == HIGH ? "ok" : "not ok", led_slave);
-    handleDeviceControl_s4(BOM_NHA_4, tb_nha4.bom == HIGH ? "ok" : "not ok", led_slave);
-    handleDeviceControl_s4(VAN_1, tb_nha4.van_1 == HIGH ? "ok" : "not ok", led_slave);
-    handleDeviceControl_s4(VAN_2, tb_nha4.van_2 == HIGH ? "ok" : "not ok", led_slave);
-    handleDeviceControl_s4(VAN_3, tb_nha4.van_3 == HIGH ? "ok" : "not ok", led_slave);
+
+    PLG_write_7(ID_master, ID_NHA_4, "4", tb_nha4.bom ? "1" : "0", tb_nha4.van_1 ? "1" : "0", tb_nha4.van_2 ? "1" : "0", tb_nha4.van_3 ? "1" : "0");
+    handleDeviceControl_s7(led_slave);
 }
 void PLG_check_mode_connect() // Check the connection mode and update LED status
 {
@@ -407,21 +431,11 @@ void PLG_data_Sensor()
     }
 
     PLG_READ_EEPROOM();
-    // handleDeviceControl("PLG", "test", led_slave);
-    // handleDeviceControl(BONNUOC, tb.bonnuoc == HIGH ? "ok" : "not ok", led_slave);
-    // handleDeviceControl(BOM, tb.bom == HIGH ? "ok" : "not ok", led_slave);
-    // handleDeviceControl(QUATHUT, tb.quathut == HIGH ? "ok" : "not ok", led_slave);
-    // handleDeviceControl(CATNAG, tb.catnag == HIGH ? "ok" : "not ok", led_slave);
-    // handleDeviceControl(DAOKHI, tb.daokhi == HIGH ? "ok" : "not ok", led_slave);
-    // handleDeviceControl(BOMCCON, tb.bomcaycon == HIGH ? "ok" : "not ok", led_slave);
-    // handleDeviceControl(DEN, tb.den == HIGH ? "ok" : "not ok", led_slave);
-    // handleDeviceControl(PHUNSUONG, tb.phunsuong == HIGH ? "ok" : "not ok", led_slave);
-    handleDeviceControl(auto, tb.autoo == HIGH ? "ok" : "not ok", led_slave);
+    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
+    handleDevicecontrol_S11(led_slave);
 
-    handleDeviceControl_s4(BOM_NHA_4, tb_nha4.bom == HIGH ? "ok" : "not ok", led_slave);
-    handleDeviceControl_s4(VAN_1, tb_nha4.van_1 == HIGH ? "ok" : "not ok", led_slave);
-    handleDeviceControl_s4(VAN_2, tb_nha4.van_2 == HIGH ? "ok" : "not ok", led_slave);
-    handleDeviceControl_s4(VAN_3, tb_nha4.van_3 == HIGH ? "ok" : "not ok", led_slave);
+    PLG_write_7(ID_master, ID_NHA_4, "4", tb_nha4.bom ? "1" : "0", tb_nha4.van_1 ? "1" : "0", tb_nha4.van_2 ? "1" : "0", tb_nha4.van_3 ? "1" : "0");
+    handleDeviceControl_s7(led_slave);
 }
 void PLG_data_DD()
 {
@@ -549,35 +563,28 @@ void PLG_thucthilenh() // Execute the command
 {
     if (address.startsWith(ID_CB) && address_slave.startsWith("slave1"))
     {
-        PLG_data_Sensor(); // Process sensor data
+        PLG_data_Sensor();
         DEBUG_PRINTF("temp: %.2f   hum: %.2f   lux: %.2f   PH-dat: %.2f\n", temp, hum, lux, ph_dat);
     }
     if (address_slave.startsWith(ID_master) && address.startsWith(ID_DD))
     {
-        PLG_data_DD(); // Process sensor data
+        PLG_data_DD();
     }
 
     if (address.startsWith(ID_control) && data.startsWith("reset"))
     {
         PLG_READ_EEPROOM();
-        handleDeviceControl(auto, tb.autoo == HIGH ? "ok" : "not ok", led_slave);
-        // handleDeviceControl(BONNUOC, tb.bonnuoc == HIGH ? "ok" : "not ok", led_slave);
-        // handleDeviceControl(BOM, tb.bom == HIGH ? "ok" : "not ok", led_slave);
-        // handleDeviceControl(QUATHUT, tb.quathut == HIGH ? "ok" : "not ok", led_slave);
-        // handleDeviceControl(CATNAG, tb.catnag == HIGH ? "ok" : "not ok", led_slave);
-        // handleDeviceControl(DAOKHI, tb.daokhi == HIGH ? "ok" : "not ok", led_slave);
-        // handleDeviceControl(BOMCCON, tb.bomcaycon == HIGH ? "ok" : "not ok", led_slave);
-        // handleDeviceControl(DEN, tb.den == HIGH ? "ok" : "not ok", led_slave);
-        // handleDeviceControl(PHUNSUONG, tb.phunsuong == HIGH ? "ok" : "not ok", led_slave);
+        PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
+        handleDevicecontrol_S11(led_slave);
     }
     if (address.startsWith(ID_NHA_4) && data.startsWith("reset"))
     {
         PLG_READ_EEPROOM();
-        handleDeviceControl_s4(BOM_NHA_4, tb_nha4.bom == HIGH ? "ok" : "not ok", led_slave);
-        handleDeviceControl_s4(VAN_1, tb_nha4.van_1 == HIGH ? "ok" : "not ok", led_slave);
-        handleDeviceControl_s4(VAN_2, tb_nha4.van_2 == HIGH ? "ok" : "not ok", led_slave);
-        handleDeviceControl_s4(VAN_3, tb_nha4.van_3 == HIGH ? "ok" : "not ok", led_slave);
+        PLG_write_7(ID_master, ID_NHA_4, "4", tb_nha4.bom ? "1" : "0", tb_nha4.van_1 ? "1" : "0", tb_nha4.van_2 ? "1" : "0", tb_nha4.van_3 ? "1" : "0");
+        handleDeviceControl_s7(led_slave);
     }
+    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
+    handleDevicecontrol_S11(led_slave);
 }
 ERA_APP_LOOP()
 {
@@ -598,7 +605,7 @@ ERA_APP_LOOP()
         digitalWrite(led_slave, HIGH);
         delay(10);
         digitalWrite(led_slave, LOW);
-    }    
+    }
 }
 void PLG_master_loop()
 {

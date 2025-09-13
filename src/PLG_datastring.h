@@ -13,10 +13,17 @@ String data1 = "";
 String data2 = "";
 String data3 = "";
 String data4 = "";
+String data5 = "";
+String data6 = "";
+String data7 = "";
+String data8 = "";
+String data_end = "E";
 String receivedData = "";
+String messages11 = address + "|" + address_slave + "|" + data1 + "|" + data2 + "|" + data3 + "|" + data4 + "|" + data5 + "|" + data6 + "|" + data7 + "|" + data8 + "|" + data_end;
 String messages4 = address + "|" + address_slave + "|" + namedata + "|" + data;
 String messages5 = address + "|" + address_slave + "|" + address_remus + "|" + namedata + "|" + data;
 String messages_sensor = address + "|" + address_slave + "|" + namedata + "|" + data1 + "|" + data2 + "|" + data3 + "|" + data4;
+String messages_7 = address + "|" + address_slave + "|" + namedata + "|" + data1 + "|" + data2 + "|" + data3 + "|" + data4;
 /*                  dia chi gui | dia chi nhan | ten du lieu | du lieu
                     dc su dung cho 2 module                                 */
 void PLG_write_4(String address, String address_slave, String namedata, String data)
@@ -31,6 +38,12 @@ void PLG_write_board_sensor(String address, String address_slave, String namedat
     // DEBUG_PRINT("Sending packet: ");
     // DEBUG_PRINTLN(messages_sensor);
 }
+void PLG_write_7(String address, String address_slave, String namedata, String data1, String data2, String data3, String data4)
+{
+    messages_7 = address + "|" + address_slave + "|" + namedata + "|" + data1 + "|" + data2 + "|" + data3 + "|" + data4;
+    // DEBUG_PRINT("Sending packet: ");
+    // DEBUG_PRINTLN(messages_sensor);
+}
 /*         dia chi gui | dia chi trung gian |dia chi cuoi | ten du lieu | du lieu
                         su dung cho 3 module                                */
 void PLG_write_5(String address, String address_slave, String address_remus, String namedata, String data)
@@ -38,6 +51,12 @@ void PLG_write_5(String address, String address_slave, String address_remus, Str
     messages5 = address + "|" + address_slave + "|" + address_remus + "|" + namedata + "|" + data;
     // DEBUG_PRINT("Sending packet: ");
     // DEBUG_PRINTLN(messages5);
+}
+void PLG_write_11(String address, String address_slave, String data1, String data2, String data3, String data4, String data5, String data6, String data7, String data8)
+{
+    messages11 = address + "|" + address_slave + "|" + data1 + "|" + data2 + "|" + data3 + "|" + data4 + "|" + data5 + "|" + data6 + "|" + data7 + "|" + data8 + "|" + data_end;
+    // DEBUG_PRINT("Sending packet: ");
+    // DEBUG_PRINTLN(messages11);
 }
 void PLG_read_4()
 {
@@ -105,6 +124,41 @@ void PLG_read_7()
     messages_sensor = address + "|" + address_slave + "|" + namedata + "|" + data1 + "|" + data2 + "|" + data3 + "|" + data4;
     // DEBUG_PRINTLN(messages_sensor);
 }
+void PLG_read_11()
+{
+    int i1 = receivedData.indexOf('|');
+    int i2 = receivedData.indexOf('|', i1 + 1);
+    int i3 = receivedData.indexOf('|', i2 + 1);
+    int i4 = receivedData.indexOf('|', i3 + 1);
+    int i5 = receivedData.indexOf('|', i4 + 1);
+    int i6 = receivedData.indexOf('|', i5 + 1);
+    int i7 = receivedData.indexOf('|', i6 + 1);
+    int i8 = receivedData.indexOf('|', i7 + 1);
+    int i9 = receivedData.indexOf('|', i8 + 1);
+    int i10 = receivedData.indexOf('|', i9 + 1);
+    int i11 = receivedData.indexOf('|', i10 + 1);
+
+    if (i1 == -1 || i2 == -1 || i3 == -1 || i4 == -1 || i5 == -1 || i6 == -1 || i7 == -1 || i8 == -1 || i9 == -1 || i10 == -1 )
+    {
+        Serial.println("Chuỗi không hợp lệ!");
+        return;
+    }
+
+    address = receivedData.substring(0, i1);
+    address_slave = receivedData.substring(i1 + 1, i2);
+    data1 = receivedData.substring(i2 + 1, i3);
+    data2 = receivedData.substring(i3 + 1, i4);
+    data3 = receivedData.substring(i4 + 1, i5);
+    data4 = receivedData.substring(i5 + 1, i6);
+    data5 = receivedData.substring(i6 + 1, i7);
+    data6 = receivedData.substring(i7 + 1, i8);
+    data7 = receivedData.substring(i8 + 1, i9);
+    data8 = receivedData.substring(i9 + 1, i10);
+    data_end = receivedData.substring(i10 + 1);
+
+    messages11 = address + "|" + address_slave + "|" + data1 + "|" + data2 + "|" + data3 + "|" + data4 + "|" + data5 + "|" + data6 + "|" + data7 + "|" + data8 + "|" + "E";
+   //// DEBUG_PRINTLN(messages11);
+}
 // Hàm đếm số dấu '|' trong chuỗi
 int PLG_count_separator(String str)
 {
@@ -123,7 +177,7 @@ int PLG_count_separator(String str)
 void PLG_check_message()
 {
     int soDauPhanCach = PLG_count_separator(receivedData);
-
+    // DEBUG_PRINTLN(soDauPhanCach);
     if (soDauPhanCach == 3)
     {
         // DEBUG_PRINTLN("Chuỗi có 4 trường dữ liệu.");
@@ -138,6 +192,11 @@ void PLG_check_message()
     {
         // DEBUG_PRINTLN("Chuỗi có 7 trường dữ liệu.");
         PLG_read_7();
+    }
+    else if (soDauPhanCach == 10)
+    {
+        // DEBUG_PRINTLN("chuoi co 11 du lieu");
+        PLG_read_11();
     }
 
     else

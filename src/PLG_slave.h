@@ -7,7 +7,7 @@
 #include <ModbusMaster.h>
 #include <hardwareSerial.h>
 #include <esp_task_wdt.h>
-#define WDT_time 1
+#define WDT_time 10
 
 // define the pins used by the transceiver module
 #define ss 05
@@ -40,6 +40,24 @@ ModbusMaster relay_modbus;
 #define RELAY_DAOKHI 2
 #define RELAY_QUATHUT 1
 #define RELAY_BONNUOC 4
+
+bool last_quathut = 0;
+bool last_daokhi = 0;
+bool last_catnag = 0;
+bool last_phunsuong = 0;
+bool last_bom = 0;
+bool last_bomccon = 0;
+bool last_den = 0;
+bool last_bonnuoc = 0;
+
+int TT_RELAY_QUATHUT = 0;
+int TT_RELAY_DAOKHI = 0;
+int TT_RELAY_CATNAG = 0;
+int TT_RELAY_PHUNSUONG = 0;
+int TT_RELAY_BOM = 0;
+int TT_RELAY_BOMCCON = 0;
+int TT_RELAY_DEN = 0;
+int TT_RELAY_BONNUOC = 0;
 //////////////////////////
 #define ID_relay "PLG_relay"
 String ID_control = "0";
@@ -105,6 +123,7 @@ void Setup_slave()
 
     Serial2.begin(9600, SERIAL_8N1, RX, TX);
     relay_modbus.begin(ID_relay_modbus, Serial2); // Cảm biến địa chỉ 2
+
     PLG_write_4(ID_control, ID_master, ID_control, Auto_cool ? "auto" : "manual");
     sen_lora_data_4();
     PLG_write_4(ID_control, ID_master, ID_control, "reset");
@@ -136,57 +155,25 @@ void PLG_cooling_level_0()
 }
 void PLG_cooling_level_1()
 {
-    // PLG_write_4(ID_control, ID_relay, QUATHUT, "ON");
-    // SEN_PRINTLN(messages4);
-    // relay_modbus.writeSingleCoil(RELAY_PHUNSUONG,1);
-    // relay_modbus.writeSingleCoil(RELAY_CATNAG,1);
     relay_modbus.writeSingleCoil(RELAY_QUATHUT, 1);
-    // relay_modbus.writeSingleCoil(RELAY_DAOKHI,1);
-    PLG_write_4(ID_control, ID_master, "level", "1");
-    sen_lora_data_4();
+
     esp_task_wdt_reset();
 }
 void PLG_cooling_level_2()
 {
-    // PLG_write_4(ID_control, ID_relay, QUATHUT, "ON");
-    // SEN_PRINTLN(messages4);
-    // PLG_write_4(ID_control, ID_relay, DAOKHI, "ON");
-    // SEN_PRINTLN(messages4);
-    // relay_modbus.writeSingleCoil(RELAY_PHUNSUONG,1);
-    // relay_modbus.writeSingleCoil(RELAY_CATNAG,1);
     relay_modbus.writeSingleCoil(RELAY_QUATHUT, 1);
     relay_modbus.writeSingleCoil(RELAY_DAOKHI, 1);
-    PLG_write_4(ID_control, ID_master, "level", "2");
-    sen_lora_data_4();
     esp_task_wdt_reset();
 }
 void PLG_cooling_level_3()
 {
-    // PLG_write_4(ID_control, ID_relay, CATNAG, "ON");
-    // SEN_PRINTLN(messages4);
-    // PLG_write_4(ID_control, ID_relay, QUATHUT, "ON");
-    // SEN_PRINTLN(messages4);
-    // PLG_write_4(ID_control, ID_relay, DAOKHI, "ON");
-    // SEN_PRINTLN(messages4);
-    // relay_modbus.writeSingleCoil(RELAY_PHUNSUONG,1);
     relay_modbus.writeSingleCoil(RELAY_CATNAG, 1);
     relay_modbus.writeSingleCoil(RELAY_QUATHUT, 1);
     relay_modbus.writeSingleCoil(RELAY_DAOKHI, 1);
-    PLG_write_4(ID_control, ID_master, "level", "3");
-    sen_lora_data_4();
     esp_task_wdt_reset();
 }
 void PLG_cooling_level_4()
 {
-    // PLG_write_4(ID_control, ID_relay, PHUNSUONG, "ON");
-    // SEN_PRINTLN(messages4);
-    // PLG_write_4(ID_control, ID_relay, CATNAG, "ON");
-    // SEN_PRINTLN(messages4);
-    // PLG_write_4(ID_control, ID_relay, QUATHUT, "ON");
-    // SEN_PRINTLN(messages4);
-    // PLG_write_4(ID_control, ID_relay, DAOKHI, "ON");
-    // SEN_PRINTLN(messages4);
-    // PLG_write_4(ID_control, ID_master, "level", "4");
     relay_modbus.writeSingleCoil(RELAY_PHUNSUONG, 1);
     relay_modbus.writeSingleCoil(RELAY_CATNAG, 1);
     relay_modbus.writeSingleCoil(RELAY_QUATHUT, 1);
@@ -276,111 +263,137 @@ void PLG_AIR_AUTO()
 
 void thucthilenh()
 {
-    /*// if (address_slave.startsWith(ID_control) || address_slave.startsWith("slave1")) // nhan du lieu dieu khien tu master va du lieu cam bien
-     // {
-     //     // Map tên thiết bị sang tên hiển thị debug
-     //     struct Device
-     //     {
-     //         const char *name;
-     //         const char *debugName;
-     //         int thanhghi;
-     //     };
-
-     //     const Device devices[] = {
-     //         {BOM, "bom", RELAY_BOM},
-     //         {DAOKHI, "quat", RELAY_DAOKHI},
-     //         {QUATHUT, "quat hut", RELAY_QUATHUT},
-     //         {CATNAG, "cat nang", RELAY_CATNAG},
-     //         {PHUNSUONG, "phunsuong", RELAY_PHUNSUONG},
-     //         {BOMCCON, "bomccon", RELAY_BOMCCON},
-     //         {DEN, "den", RELAY_DEN},
-     //         {BONNUOC, "bonnuoc", RELAY_BONNUOC}};
-
-     //     bool commandHandled = false;
-
-     //     for (const auto &device : devices)
-     //     {
-     //         if (namedata.startsWith(device.name))
-     //         {
-     //             if (data.startsWith("ok"))
-     //             {
-     //                 // DEBUG_PRINTF("[ON]%s\n ", device.name);
-     //                 // PLG_write_4(ID_control, ID_relay, device.name, "ON");
-     //                 relay_modbus.writeSingleCoil(device.thanhghi, 1);
-     //             }
-     //             else if (data.startsWith("not ok"))
-     //             {
-     //                 // DEBUG_PRINTF("[OFF]%s\n ", device.name);
-     //                 // PLG_write_4(ID_control, ID_relay, device.name, "OFF");
-     //                 relay_modbus.writeSingleCoil(device.thanhghi, 0);
-     //             }
-     //             SEN_PRINTLN(messages4);
-     //             commandHandled = true;
-     //             esp_task_wdt_reset();
-     //             break;
-     //         }
-     // }
-
-     // Xử lý các lệnh đặc biệt khác không dùng chung mô-típ
-     // if (!commandHandled)
-     // {
-     //     if (namedata.startsWith("wifi") && data.startsWith("connected"))
-     //     {
-     //         PLG_write_4(ID_control, "PLG_relay", "requet", "run");
-     //         SEN_PRINTLN(messages4);
-     //         commandHandled = true;
-     //     }*/
-    if (namedata.startsWith("all_CB"))
+    if (address.startsWith(ID_master) && data_end.startsWith("E")&& address_slave.startsWith(ID_control))
     {
-        temp = data1.toFloat();
+        TT_RELAY_QUATHUT = data1.toInt();
+        TT_RELAY_DAOKHI = data2.toInt();
+        TT_RELAY_CATNAG = data3.toInt();
+        TT_RELAY_PHUNSUONG = data4.toInt();
+        TT_RELAY_BOM = data5.toInt();
+        TT_RELAY_BOMCCON = data6.toInt();
+        TT_RELAY_DEN = data7.toInt();
+        TT_RELAY_BONNUOC = data8.toInt();
+        data_end="KHAC";
+        Serial.println("----- TRANG THAI RELAY -----");
+        Serial.print("QUAT HUT   : ");
+        Serial.println(TT_RELAY_QUATHUT);
+        Serial.print("DAO KHI    : ");
+        Serial.println(TT_RELAY_DAOKHI);
+        Serial.print("CAT NANG   : ");
+        Serial.println(TT_RELAY_CATNAG);
+        Serial.print("PHUN SUONG : ");
+        Serial.println(TT_RELAY_PHUNSUONG);
+        Serial.print("BOM        : ");
+        Serial.println(TT_RELAY_BOM);
+        Serial.print("BOM CON    : ");
+        Serial.println(TT_RELAY_BOMCCON);
+        Serial.print("DEN        : ");
+        Serial.println(TT_RELAY_DEN);
+        Serial.print("BON NUOC   : ");
+        Serial.println(TT_RELAY_BONNUOC);
+        Serial.println("----------------------------");
+
+        // ----------- QUẠT HÚT -----------
+        if (TT_RELAY_QUATHUT != last_quathut)
+        {
+            relay_modbus.writeSingleCoil(RELAY_QUATHUT, TT_RELAY_QUATHUT);
+            last_quathut = TT_RELAY_QUATHUT;
+            esp_task_wdt_reset();
+        }
+
+        // ----------- ĐẢO KHÍ -----------
+        if (TT_RELAY_DAOKHI != last_daokhi)
+        {
+            relay_modbus.writeSingleCoil(RELAY_DAOKHI, TT_RELAY_DAOKHI);
+            last_daokhi = TT_RELAY_DAOKHI;
+            esp_task_wdt_reset();
+        }
+
+        // ----------- CẮT NẮNG -----------
+        if (TT_RELAY_CATNAG != last_catnag)
+        {
+            relay_modbus.writeSingleCoil(RELAY_CATNAG, TT_RELAY_CATNAG);
+            last_catnag = TT_RELAY_CATNAG;
+            esp_task_wdt_reset();
+        }
+
+        // ----------- PHUN SƯƠNG -----------
+        if (TT_RELAY_PHUNSUONG != last_phunsuong)
+        {
+            relay_modbus.writeSingleCoil(RELAY_PHUNSUONG, TT_RELAY_PHUNSUONG);
+            last_phunsuong = TT_RELAY_PHUNSUONG;
+            esp_task_wdt_reset();
+        }
+
+        // ----------- BƠM -----------
+        if (TT_RELAY_BOM != last_bom)
+        {
+            relay_modbus.writeSingleCoil(RELAY_BOM, TT_RELAY_BOM);
+            last_bom = TT_RELAY_BOM;
+            esp_task_wdt_reset();
+        }
+
+        // ----------- BƠM CON -----------
+        if (TT_RELAY_BOMCCON != last_bomccon)
+        {
+            relay_modbus.writeSingleCoil(RELAY_BOMCCON, TT_RELAY_BOMCCON);
+            last_bomccon = TT_RELAY_BOMCCON;
+            esp_task_wdt_reset();
+        }
+
+        // ----------- ĐÈN -----------
+        if (TT_RELAY_DEN != last_den)
+        {
+            relay_modbus.writeSingleCoil(RELAY_DEN, TT_RELAY_DEN);
+            last_den = TT_RELAY_DEN;
+            esp_task_wdt_reset();
+        }
+
+        // ----------- BỒN NƯỚC -----------
+        if (TT_RELAY_BONNUOC != last_bonnuoc)
+        {
+            relay_modbus.writeSingleCoil(RELAY_BONNUOC, TT_RELAY_BONNUOC);
+            last_bonnuoc = TT_RELAY_BONNUOC;
+            esp_task_wdt_reset();
+        } // hut ,dao, cat,phun,bom,bomcc,den,auto
     }
-    if (address.startsWith(ID_master) && namedata.startsWith(auto))
-
+    if (address_slave.startsWith(ID_control) || address_slave.startsWith("slave1")) // nhan du lieu dieu khien tu master va du lieu cam bien
     {
-        if (data.startsWith("ok"))
-        {
-            chaytudong = 1;
-        }
-        else if (data.startsWith("not ok"))
-        {
-            chaytudong = 0;
-        }
-    }
 
-    if (address.startsWith(ID_control_DD))
-    {
-        if (namedata.startsWith("EC"))
+        if (address.startsWith(ID_control_DD))
         {
-            ec_nuoc = data.toFloat();
+            if (namedata.startsWith("EC"))
+            {
+                ec_nuoc = data.toFloat();
 
-            DEBUG_PRINT("EC nước: ");
-            DEBUG_PRINTLN(ec_nuoc);
-        }
-        if (namedata.startsWith("PH"))
-        {
-            ph_nuoc = data.toFloat();
+                DEBUG_PRINT("EC nước: ");
+                DEBUG_PRINTLN(ec_nuoc);
+            }
+            if (namedata.startsWith("PH"))
+            {
+                ph_nuoc = data.toFloat();
 
-            // DEBUG_PRINT("pH nước: ");
-            // DEBUG_PRINTLN(ph_nuoc);
+                // DEBUG_PRINT("pH nước: ");
+                // DEBUG_PRINTLN(ph_nuoc);
+            }
+            PLG_write_board_sensor(ID_DD, ID_master, "ec_nuoc", String(ec_nuoc, 2), String(ph_nuoc, 2), "0", "0");
+            LoRa.beginPacket(); // Start a new packet
+            LoRa.print(messages_sensor);
+            LoRa.endPacket();               // Finish the packet and send it
+            digitalWrite(led_master, HIGH); // Turn off LED for slave status
+            delay(20);                      // Delay to ensure the message is sent
+            digitalWrite(led_master, LOW);  // Turn off LED for slave statusF
+            PLG_write_board_sensor(ID_DD, ID_master, "ph_nuoc", String(ec_nuoc, 2), String(ph_nuoc, 2), "0", "0");
+            LoRa.beginPacket(); // Start a new packet
+            LoRa.print(messages_sensor);
+            LoRa.endPacket();               // Finish the packet and send it
+            digitalWrite(led_master, HIGH); // Turn off LED for slave status
+            delay(20);                      // Delay to ensure the message is sent
+            digitalWrite(led_master, LOW);  // Turn off LED for slave statusF
+            esp_task_wdt_reset();
         }
-        PLG_write_board_sensor(ID_DD, ID_master, "ec_nuoc", String(ec_nuoc, 2), String(ph_nuoc, 2), "0", "0");
-        LoRa.beginPacket(); // Start a new packet
-        LoRa.print(messages_sensor);
-        LoRa.endPacket();               // Finish the packet and send it
-        digitalWrite(led_master, HIGH); // Turn off LED for slave status
-        delay(20);                      // Delay to ensure the message is sent
-        digitalWrite(led_master, LOW);  // Turn off LED for slave statusF
-        PLG_write_board_sensor(ID_DD, ID_master, "ph_nuoc", String(ec_nuoc, 2), String(ph_nuoc, 2), "0", "0");
-        LoRa.beginPacket(); // Start a new packet
-        LoRa.print(messages_sensor);
-        LoRa.endPacket();               // Finish the packet and send it
-        digitalWrite(led_master, HIGH); // Turn off LED for slave status
-        delay(20);                      // Delay to ensure the message is sent
-        digitalWrite(led_master, LOW);  // Turn off LED for slave statusF
-        esp_task_wdt_reset();
     }
 }
-
 void loop_slave()
 {
     int packetSize = LoRa.parsePacket();
@@ -391,6 +404,7 @@ void loop_slave()
         {
             receivedData += (char)LoRa.read();
         }
+        DEBUG_PRINTLN(receivedData);
         PLG_check_message(); // Check the received data
         thucthilenh();       // Execute the command
 
@@ -414,10 +428,6 @@ void loop_slave()
     if (millis() - lastLoRaReceiveTime > 5000)
     {
         ESP.restart();
-    }
-    if (chaytudong)
-    {
-        PLG_AIR_AUTO();
     }
     esp_task_wdt_reset();
 }
