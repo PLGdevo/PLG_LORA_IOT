@@ -49,6 +49,7 @@ bool last_bom = 0;
 bool last_bomccon = 0;
 bool last_den = 0;
 bool last_bonnuoc = 0;
+bool last_Run_dd = 0;
 
 int TT_RELAY_QUATHUT = 0;
 int TT_RELAY_DAOKHI = 0;
@@ -58,6 +59,7 @@ int TT_RELAY_BOM = 0;
 int TT_RELAY_BOMCCON = 0;
 int TT_RELAY_DEN = 0;
 int TT_RELAY_BONNUOC = 0;
+int TT_RUN_DD = 0;
 //////////////////////////
 #define ID_relay "PLG_relay"
 String ID_control = "0";
@@ -263,36 +265,37 @@ void PLG_AIR_AUTO()
 
 void thucthilenh()
 {
-    if (address.startsWith(ID_master) && data_end.startsWith("E")&& address_slave.startsWith(ID_control))
+    if (address.startsWith(ID_master) && address_slave.startsWith(ID_control))
     {
-        TT_RELAY_QUATHUT = data1.toInt();
-        TT_RELAY_DAOKHI = data2.toInt();
-        TT_RELAY_CATNAG = data3.toInt();
-        TT_RELAY_PHUNSUONG = data4.toInt();
-        TT_RELAY_BOM = data5.toInt();
-        TT_RELAY_BOMCCON = data6.toInt();
-        TT_RELAY_DEN = data7.toInt();
-        TT_RELAY_BONNUOC = data8.toInt();
-        data_end="KHAC";
-        Serial.println("----- TRANG THAI RELAY -----");
-        Serial.print("QUAT HUT   : ");
-        Serial.println(TT_RELAY_QUATHUT);
-        Serial.print("DAO KHI    : ");
-        Serial.println(TT_RELAY_DAOKHI);
-        Serial.print("CAT NANG   : ");
-        Serial.println(TT_RELAY_CATNAG);
-        Serial.print("PHUN SUONG : ");
-        Serial.println(TT_RELAY_PHUNSUONG);
-        Serial.print("BOM        : ");
-        Serial.println(TT_RELAY_BOM);
-        Serial.print("BOM CON    : ");
-        Serial.println(TT_RELAY_BOMCCON);
-        Serial.print("DEN        : ");
-        Serial.println(TT_RELAY_DEN);
-        Serial.print("BON NUOC   : ");
-        Serial.println(TT_RELAY_BONNUOC);
-        Serial.println("----------------------------");
-
+        TT_RELAY_QUATHUT = data_Qhut.toInt();
+        TT_RELAY_DAOKHI = data_Qdao.toInt();
+        TT_RELAY_CATNAG = data_Ct_NG.toInt();
+        TT_RELAY_PHUNSUONG = data_PS.toInt();
+        TT_RELAY_BOM = data_B.toInt();
+        TT_RELAY_BOMCCON = data_BCC.toInt();
+        TT_RELAY_DEN = data_DEN.toInt();
+        TT_RELAY_BONNUOC = data_BON_N.toInt();
+        TT_RUN_DD = data_Run_DD.toInt();
+        data_end = "KHAC";
+        /*      Serial.println("----- TRANG THAI RELAY -----");
+              Serial.print("QUAT HUT   : ");
+              Serial.println(TT_RELAY_QUATHUT);
+              Serial.print("DAO KHI    : ");
+              Serial.println(TT_RELAY_DAOKHI);
+              Serial.print("CAT NANG   : ");
+              Serial.println(TT_RELAY_CATNAG);
+              Serial.print("PHUN SUONG : ");
+              Serial.println(TT_RELAY_PHUNSUONG);
+              Serial.print("BOM        : ");
+              Serial.println(TT_RELAY_BOM);
+              Serial.print("BOM CON    : ");
+              Serial.println(TT_RELAY_BOMCCON);
+              Serial.print("DEN        : ");
+              Serial.println(TT_RELAY_DEN);
+              Serial.print("BON NUOC   : ");
+              Serial.println(TT_RELAY_BONNUOC);
+              Serial.println("----------------------------");
+      */
         // ----------- QUẠT HÚT -----------
         if (TT_RELAY_QUATHUT != last_quathut)
         {
@@ -356,43 +359,82 @@ void thucthilenh()
             last_bonnuoc = TT_RELAY_BONNUOC;
             esp_task_wdt_reset();
         } // hut ,dao, cat,phun,bom,bomcc,den,auto
-    }
-    if (address_slave.startsWith(ID_control) || address_slave.startsWith("slave1")) // nhan du lieu dieu khien tu master va du lieu cam bien
-    {
-
-        if (address.startsWith(ID_control_DD))
+        if (TT_RUN_DD != last_Run_dd)
         {
-            if (namedata.startsWith("EC"))
-            {
-                ec_nuoc = data.toFloat();
+           if(TT_RUN_DD==1)
+           {
+            DEBUG_PRINT("trang thai RUN_DD:");
+            PLG_write_4(ID_control, ID_DD, "0","1");
+            SEN_PRINTLN(messages4);
 
-                DEBUG_PRINT("EC nước: ");
-                DEBUG_PRINTLN(ec_nuoc);
-            }
-            if (namedata.startsWith("PH"))
-            {
-                ph_nuoc = data.toFloat();
+            DEBUG_PRINTLN(messages4);
+           }
+           else
+           {
+            DEBUG_PRINT("trang thai RUN_DD:");
+            PLG_write_4(ID_control, ID_DD, "0","0");
+            SEN_PRINTLN(messages4);
+           }
+            
 
-                // DEBUG_PRINT("pH nước: ");
-                // DEBUG_PRINTLN(ph_nuoc);
-            }
-            PLG_write_board_sensor(ID_DD, ID_master, "ec_nuoc", String(ec_nuoc, 2), String(ph_nuoc, 2), "0", "0");
-            LoRa.beginPacket(); // Start a new packet
-            LoRa.print(messages_sensor);
-            LoRa.endPacket();               // Finish the packet and send it
-            digitalWrite(led_master, HIGH); // Turn off LED for slave status
-            delay(20);                      // Delay to ensure the message is sent
-            digitalWrite(led_master, LOW);  // Turn off LED for slave statusF
-            PLG_write_board_sensor(ID_DD, ID_master, "ph_nuoc", String(ec_nuoc, 2), String(ph_nuoc, 2), "0", "0");
-            LoRa.beginPacket(); // Start a new packet
-            LoRa.print(messages_sensor);
-            LoRa.endPacket();               // Finish the packet and send it
-            digitalWrite(led_master, HIGH); // Turn off LED for slave status
-            delay(20);                      // Delay to ensure the message is sent
-            digitalWrite(led_master, LOW);  // Turn off LED for slave statusF
-            esp_task_wdt_reset();
+            DEBUG_PRINTLN(messages4);
         }
     }
+    if (address.startsWith(ID_DD) && address_slave.startsWith(ID_control))
+    {
+
+        ec_nuoc = namedata.toFloat();
+        ph_nuoc = data.toFloat();
+        DEBUG_PRINT(ec_nuoc);DEBUG_PRINT("    ");DEBUG_PRINTLN(ph_nuoc);
+        PLG_write_nha_2(ID_control, ID_master, String(TT_RELAY_QUATHUT), String(TT_RELAY_DAOKHI), String(TT_RELAY_CATNAG), String(TT_RELAY_PHUNSUONG), String(TT_RELAY_BOM), String(TT_RELAY_BOMCCON), String(TT_RELAY_DEN), String(TT_RELAY_BONNUOC), String(TT_RUN_DD), String(ec_nuoc, 2), String(ph_nuoc, 2));
+        LoRa.beginPacket(); // Start a new packet
+        LoRa.print(messages_nha2);
+        LoRa.endPacket();               // Finish the packet and send it
+        digitalWrite(led_master, HIGH); // Turn off LED for slave status
+        delay(20);                      // Delay to ensure the message is sent
+        digitalWrite(led_master, LOW);  // Turn off LED for slave statusF
+        esp_task_wdt_reset();
+        // board dinh duong gui
+        // PLG_write_4(ID_DD, ID_control, String(EC, 2),String(PH, 2));
+        // SEN_PRINTLN(messages4);
+        // DEBUG_PRINTLN(messages4);
+    }
+    // if (address_slave.startsWith(ID_control) || address_slave.startsWith("slave1")) // nhan du lieu dieu khien tu master va du lieu cam bien
+    // {
+
+    //     if (address.startsWith(ID_control_DD))
+    //     {
+    //         if (namedata.startsWith("EC"))
+    //         {
+    //             ec_nuoc = data.toFloat();
+
+    //             DEBUG_PRINT("EC nước: ");
+    //             DEBUG_PRINTLN(ec_nuoc);
+    //         }
+    //         if (namedata.startsWith("PH"))
+    //         {
+    //             ph_nuoc = data.toFloat();
+
+    //             // DEBUG_PRINT("pH nước: ");
+    //             // DEBUG_PRINTLN(ph_nuoc);
+    //         }
+    //         PLG_write_board_sensor(ID_DD, ID_master, "ec_nuoc", String(ec_nuoc, 2), String(ph_nuoc, 2), "0", "0");
+    //         LoRa.beginPacket(); // Start a new packet
+    //         LoRa.print(messages_sensor);
+    //         LoRa.endPacket();               // Finish the packet and send it
+    //         digitalWrite(led_master, HIGH); // Turn off LED for slave status
+    //         delay(20);                      // Delay to ensure the message is sent
+    //         digitalWrite(led_master, LOW);  // Turn off LED for slave statusF
+    //         PLG_write_board_sensor(ID_DD, ID_master, "ph_nuoc", String(ec_nuoc, 2), String(ph_nuoc, 2), "0", "0");
+    //         LoRa.beginPacket(); // Start a new packet
+    //         LoRa.print(messages_sensor);
+    //         LoRa.endPacket();               // Finish the packet and send it
+    //         digitalWrite(led_master, HIGH); // Turn off LED for slave status
+    //         delay(20);                      // Delay to ensure the message is sent
+    //         digitalWrite(led_master, LOW);  // Turn off LED for slave statusF
+    //         esp_task_wdt_reset();
+    //     }
+    // }
 }
 void loop_slave()
 {

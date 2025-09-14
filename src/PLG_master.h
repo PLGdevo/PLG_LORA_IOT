@@ -36,6 +36,7 @@ int status_control = 0;
 #define ADDR_QUATHUT 5
 #define ADDR_BOMCCON 6
 #define ADDR_BONNUOC 7
+#define ADDR_RUN_DD 14
 
 #define ADDR_BOM_NHA_4 8
 #define ADDR_VAN_1 9
@@ -53,7 +54,7 @@ int status_control = 0;
 #define DAOKHI "V6"
 #define QUATHUT "V7"
 #define BONNUOC "V8"
-#define auto "V13"
+#define run_dd "V13"
 //---------------nhà số 4
 #define BOM_NHA_4 "V9"
 #define VAN_1 "V10"
@@ -72,7 +73,7 @@ float ec_nuoc = 0.0; // V19
 float ph_dat = 0.0;  // V13
 int level_cool = 0;
 String mode = "";
-struct thietbi_nha4
+struct thietbi_nha4 // nha so 4
 {
     int bom = 0;
     int van_1 = 0;
@@ -80,7 +81,7 @@ struct thietbi_nha4
     int van_3 = 0;
 };
 thietbi_nha4 tb_nha4;
-struct ThietBi
+struct ThietBi // nha so 2
 {
     int bom = 0;
     int catnag = 0;
@@ -90,7 +91,7 @@ struct ThietBi
     int quathut = 0;
     int bomcaycon = 0;
     int bonnuoc = 0;
-    int autoo = 1;
+    int Run_dd = 1;
 };
 
 ThietBi tb;
@@ -119,12 +120,12 @@ void handleDeviceControl_s4(String deviceName, String status, int ledPin) // gui
     delay(20);
     digitalWrite(ledPin, LOW);
 }
-void handleDevicecontrol_S11(int ledPin)
+void handleDevicecontrol_nha2(int ledPin)
 {
     LoRa.beginPacket();
-    LoRa.print(messages11);
+    LoRa.print(messages_nha2);
     LoRa.endPacket();
-    DEBUG_PRINTLN(messages11);
+    DEBUG_PRINTLN(messages_nha2);
     digitalWrite(ledPin, HIGH);
     delay(20);
     digitalWrite(ledPin, LOW);
@@ -141,7 +142,7 @@ void handleDeviceControl_s7(int ledPin) // gui data nha so 4
 }
 void PLG_WRITE_EEPROOM()
 {
-    EEPROM.write(ADDR_AUTO, (uint8_t)tb.autoo);
+    EEPROM.write(ADDR_RUN_DD, (uint8_t)tb.Run_dd);
     EEPROM.write(ADDR_BOM, (uint8_t)tb.bom);
     EEPROM.write(ADDR_CATNAG, (uint8_t)tb.catnag);
     EEPROM.write(ADDR_DEN, (uint8_t)tb.den);
@@ -150,6 +151,7 @@ void PLG_WRITE_EEPROOM()
     EEPROM.write(ADDR_QUATHUT, (uint8_t)tb.quathut);
     EEPROM.write(ADDR_BOMCCON, (uint8_t)tb.bomcaycon);
     EEPROM.write(ADDR_BONNUOC, (uint8_t)tb.bonnuoc);
+
     EEPROM.write(ADDR_BOM_NHA_4, (uint8_t)tb_nha4.bom);
     EEPROM.write(ADDR_VAN_1, (uint8_t)tb_nha4.van_1);
     EEPROM.write(ADDR_VAN_2, (uint8_t)tb_nha4.van_2);
@@ -159,7 +161,7 @@ void PLG_WRITE_EEPROOM()
 }
 void PLG_READ_EEPROOM()
 {
-    tb.autoo = EEPROM.read(ADDR_AUTO);
+    tb.Run_dd = EEPROM.read(ADDR_RUN_DD);
     tb.bom = EEPROM.read(ADDR_BOM);
     tb.catnag = EEPROM.read(ADDR_CATNAG);
     tb.den = EEPROM.read(ADDR_DEN);
@@ -176,74 +178,74 @@ void PLG_READ_EEPROOM()
 
 ERA_WRITE(V3) // auto || manual
 {
-    tb.autoo = param.getInt();
-    ERa.virtualWrite(V3, tb.autoo);
+    tb.Run_dd = param.getInt();
+    ERa.virtualWrite(V3, tb.Run_dd);
     PLG_WRITE_EEPROOM();
-    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
-    handleDevicecontrol_S11(led_slave);
+    PLG_write_nha_2(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0", tb.Run_dd ? "1" : "0", "", "");
+    handleDevicecontrol_nha2(led_slave);
 }
 ERA_WRITE(V0) // Bơm
 {
     tb.bom = param.getInt();
     ERa.virtualWrite(V0, tb.bom);
     PLG_WRITE_EEPROOM();
-    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
-    handleDevicecontrol_S11(led_slave);
+    PLG_write_nha_2(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0", tb.Run_dd ? "1" : "0", "", "");
+    handleDevicecontrol_nha2(led_slave);
 }
 ERA_WRITE(V26) // bon nuoc
 {
     tb.bonnuoc = param.getInt();
     ERa.virtualWrite(V26, tb.bonnuoc);
     PLG_WRITE_EEPROOM();
-    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
-    handleDevicecontrol_S11(led_slave);
+    PLG_write_nha_2(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0", tb.Run_dd ? "1" : "0", "", "");
+    handleDevicecontrol_nha2(led_slave);
 }
 ERA_WRITE(V1) // Quạt hút
 {
     tb.quathut = param.getInt();
     ERa.virtualWrite(V1, tb.quathut);
     PLG_WRITE_EEPROOM();
-    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
-    handleDevicecontrol_S11(led_slave);
+    PLG_write_nha_2(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0", tb.Run_dd ? "1" : "0", "", "");
+    handleDevicecontrol_nha2(led_slave);
 }
 ERA_WRITE(V2) // Cắt nâng
 {
     tb.catnag = param.getInt();
     ERa.virtualWrite(V2, tb.catnag);
     PLG_WRITE_EEPROOM();
-    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
-    handleDevicecontrol_S11(led_slave);
+    PLG_write_nha_2(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0", tb.Run_dd ? "1" : "0", "", "");
+    handleDevicecontrol_nha2(led_slave);
 }
 ERA_WRITE(V5) // Quạt đảo khí
 {
     tb.daokhi = param.getInt();
     ERa.virtualWrite(V5, tb.daokhi);
     PLG_WRITE_EEPROOM();
-    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
-    handleDevicecontrol_S11(led_slave);
+    PLG_write_nha_2(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0", tb.Run_dd ? "1" : "0", "", "");
+    handleDevicecontrol_nha2(led_slave);
 }
 ERA_WRITE(V6) // Bơm cây con
 {
     tb.bomcaycon = param.getInt();
     PLG_WRITE_EEPROOM();
-    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
-    handleDevicecontrol_S11(led_slave);
+    PLG_write_nha_2(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0", tb.Run_dd ? "1" : "0", "", "");
+    handleDevicecontrol_nha2(led_slave);
 }
 ERA_WRITE(V7) // Đèn
 {
     tb.den = param.getInt();
 
     PLG_WRITE_EEPROOM();
-    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
-    handleDevicecontrol_S11(led_slave);
+    PLG_write_nha_2(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0", tb.Run_dd ? "1" : "0", "", "");
+    handleDevicecontrol_nha2(led_slave);
 }
 ERA_WRITE(V8) // Phun sương
 {
     tb.phunsuong = param.getInt();
     ERa.virtualWrite(V8, tb.phunsuong);
     PLG_WRITE_EEPROOM();
-    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
-    handleDevicecontrol_S11(led_slave);
+    PLG_write_nha_2(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0", tb.Run_dd ? "1" : "0", "", "");
+    handleDevicecontrol_nha2(led_slave);
 }
 ERA_WRITE(V10) // nhiet do
 {
@@ -383,10 +385,10 @@ void Setup_master()
     ERa.virtualWrite(V15, tb_nha4.van_1);
     ERa.virtualWrite(V16, tb_nha4.van_2);
     ERa.virtualWrite(V17, tb_nha4.van_3);
-    ERa.virtualWrite(V3, tb.autoo);
+    ERa.virtualWrite(V3, tb.Run_dd);
     // hut ,dao, cat,phun,bom,bomcc,den,auto
-    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
-    handleDevicecontrol_S11(led_slave);
+    PLG_write_nha_2(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0", tb.Run_dd ? "1" : "0", "", "");
+    handleDevicecontrol_nha2(led_slave);
     //----------------nha so 4
 
     PLG_write_7(ID_master, ID_NHA_4, "4", tb_nha4.bom ? "1" : "0", tb_nha4.van_1 ? "1" : "0", tb_nha4.van_2 ? "1" : "0", tb_nha4.van_3 ? "1" : "0");
@@ -427,15 +429,8 @@ void PLG_data_Sensor()
     }
     else
     {
-        DEBUG_PRINT("Tên dữ liệu không hợp lệ: ");
+        DEBUG_PRINT("Tên dữ liệu cam bien không hợp lệ: ");
     }
-
-    PLG_READ_EEPROOM();
-    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
-    handleDevicecontrol_S11(led_slave);
-
-    PLG_write_7(ID_master, ID_NHA_4, "4", tb_nha4.bom ? "1" : "0", tb_nha4.van_1 ? "1" : "0", tb_nha4.van_2 ? "1" : "0", tb_nha4.van_3 ? "1" : "0");
-    handleDeviceControl_s7(led_slave);
 }
 void PLG_data_DD()
 {
@@ -564,18 +559,22 @@ void PLG_thucthilenh() // Execute the command
     if (address.startsWith(ID_CB) && address_slave.startsWith("slave1"))
     {
         PLG_data_Sensor();
-        DEBUG_PRINTF("temp: %.2f   hum: %.2f   lux: %.2f   PH-dat: %.2f\n", temp, hum, lux, ph_dat);
+        // DEBUG_PRINTF("temp: %.2f   hum: %.2f   lux: %.2f   PH-dat: %.2f\n", temp, hum, lux, ph_dat);
     }
-    if (address_slave.startsWith(ID_master) && address.startsWith(ID_DD))
+    if (address.startsWith(ID_control) && address_slave.startsWith(ID_master))
     {
-        PLG_data_DD();
+        // doc ph+EC bo dd tu nha 2
+        ph_nuoc = data_PH_nuoc.toFloat();
+        ec_nuoc = data_EC_nuoc.toFloat();
+        ERa.virtualWrite(V19, ec_nuoc);        
+        ERa.virtualWrite(V20, ph_nuoc);
     }
 
     if (address.startsWith(ID_control) && data.startsWith("reset"))
     {
         PLG_READ_EEPROOM();
-        PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
-        handleDevicecontrol_S11(led_slave);
+        PLG_write_nha_2(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0", tb.Run_dd ? "1" : "0", "", "");
+        handleDevicecontrol_nha2(led_slave);
     }
     if (address.startsWith(ID_NHA_4) && data.startsWith("reset"))
     {
@@ -583,8 +582,12 @@ void PLG_thucthilenh() // Execute the command
         PLG_write_7(ID_master, ID_NHA_4, "4", tb_nha4.bom ? "1" : "0", tb_nha4.van_1 ? "1" : "0", tb_nha4.van_2 ? "1" : "0", tb_nha4.van_3 ? "1" : "0");
         handleDeviceControl_s7(led_slave);
     }
-    PLG_write_11(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0");
-    handleDevicecontrol_S11(led_slave);
+    PLG_READ_EEPROOM();
+
+    PLG_write_7(ID_master, ID_NHA_4, "4", tb_nha4.bom ? "1" : "0", tb_nha4.van_1 ? "1" : "0", tb_nha4.van_2 ? "1" : "0", tb_nha4.van_3 ? "1" : "0");
+    handleDeviceControl_s7(led_slave);
+    PLG_write_nha_2(ID_master, ID_control, tb.quathut ? "1" : "0", tb.daokhi ? "1" : "0", tb.catnag ? "1" : "0", tb.phunsuong ? "1" : "0", tb.bom ? "1" : "0", tb.bomcaycon ? "1" : "0", tb.den ? "1" : "0", tb.bonnuoc ? "1" : "0", tb.Run_dd ? "1" : "0", "a", "b");
+    handleDevicecontrol_nha2(led_slave);
 }
 ERA_APP_LOOP()
 {
